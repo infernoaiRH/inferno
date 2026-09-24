@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.claude
+docs/research
+data
+.data
+graphify-out
+*.tsbuildinfo
+# Secrets stay out of the image: `next build` copies .env and .env.production into the server bundle.
+.env*

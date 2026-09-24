@@ -1,0 +1,40 @@
+{
+  "name": "inferno",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@mlc-ai/web-llm": "^0.2.85",
+    "@noble/ciphers": "^2.4.0",
+    "@noble/curves": "^2.4.0",
+    "@noble/hashes": "^2.4.0",
+    "clsx": "^2.1.1",
+    "ioredis": "^6.0.0",
+    "lucide-react": "^1.47.0",
+    "motion": "^13.4.2",
+    "next": "16.3.6",
+    "postgres": "^3.4.9",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "tailwind-merge": "^3.7.0",
+    "viem": "^2.56.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

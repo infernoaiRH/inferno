@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+/*
+ * Inferno design tokens: "Thermal".
+ * Heat means compute. Anything working (streaming tokens, busy GPUs, new blocks)
+ * glows along the inferno ramp; anything idle stays cold violet-black.
+ */
+@theme {
+  --color-night: #0b0a10;
+  --color-night-2: #14121c;
+  --color-night-3: #1d1a28;
+  --color-line: #2a2540;
+  --color-line-bright: #3e3760;
+  --color-mist: #f3f0ff;
+  --color-hush: #a9a3c2;
+  --color-faint: #736d8e;
+
+  /* The inferno ramp, cold to hot. Never put body text on heat-4 or heat-5. */
+  --color-heat-1: #2a0b4f;
+  --color-heat-2: #7a1e6e;
+  --color-heat-3: #d2433e;
+  --color-heat-4: #f7902b;
+  --color-heat-5: #fce78a;
+
+  --color-flame: #f7902b; /* primary actions and focus */
+  --color-mint: #9fe8c8; /* ok */
+  --color-ember: #ff8a80; /* errors */
+
+  /* Aliases kept so earlier components re-theme without edits. */
+  --color-moon: var(--color-flame);
+  --color-moon-deep: var(--color-heat-3);
+  --color-brass: var(--color-heat-5);
+
+  --font-display: var(--font-anybody), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+
+  --ease-quiet: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-breathe: breathe 3.2s var(--ease-quiet) infinite;
+  --animate-marquee: marquee 48s linear infinite;
+  --animate-rise: rise 0.9s var(--ease-quiet) both;
+
+  @keyframes breathe {
+    0%, 100% { opacity: 0.45; transform: scale(0.85); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background: var(--color-night);
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 5rem;
+  }
+  body {
+    background: var(--color-night);
+    color: var(--color-mist);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* Film grain, like sensor noise on a thermal camera; purely decorative. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--color-flame) 40%, transparent);
+    color: var(--color-mist);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-flame);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  /* Anybody: loud and wide for headlines. */
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-variation-settings: "wdth" 118;
+    text-wrap: balance;
+    letter-spacing: -0.015em;
+    line-height: 1.02;
+  }
+  p { text-wrap: pretty; }
+}
+
+@layer utilities {
+  /* Width axis presets for Anybody (50 = condensed, 150 = extra wide). */
+  .narrow { font-variation-settings: "wdth" 80; }
+  .wide { font-variation-settings: "wdth" 132; }
+  .xwide { font-variation-settings: "wdth" 150; }
+  /* Legacy names from the Sotto build; kept so older markup still renders sensibly. */
+  .soft { font-variation-settings: "wdth" 100; }
+  .sharp { font-variation-settings: "wdth" 132; }
+  /* Mode marks (the old score dynamics); now set loud, italic and wide. */
+  .dynamic {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 900;
+    font-variation-settings: "wdth" 130;
+    letter-spacing: -0.02em;
+  }
+  /* The heat ramp, for the one signature element in a view. */
+  .heat-text {
+    background: linear-gradient(90deg, var(--color-heat-3), var(--color-heat-4) 55%, var(--color-heat-5));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .heat-fill {
+    background: linear-gradient(90deg, var(--color-heat-1), var(--color-heat-2) 25%, var(--color-heat-3) 50%, var(--color-heat-4) 75%, var(--color-heat-5));
+  }
+  .tnum { font-variant-numeric: tabular-nums; }
+  .flash-up { color: var(--color-mint); transition: color 0.7s var(--ease-quiet); }
+  .flash-down { color: var(--color-ember); transition: color 0.7s var(--ease-quiet); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

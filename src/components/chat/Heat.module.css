@@ -1,0 +1,28 @@
+/*
+ * The heat trace. Each streamed chunk lands hot (heat-5) and cools through heat-4 and heat-3 to
+ * the text colour, which is the unset 100% keyframe. --heat (0 to 1) follows tokens/s: faster
+ * writing glows wider and cools slower. No fill mode, so a finished animation lets go of its span.
+ */
+.chunk {
+  animation: cool calc(1s + var(--heat, 0) * 0.5s) linear;
+}
+
+@keyframes cool {
+  0% {
+    color: var(--color-heat-5);
+    text-shadow: 0 0 calc(var(--heat, 0) * 14px) var(--color-heat-4);
+  }
+  30% {
+    color: var(--color-heat-4);
+  }
+  65% {
+    color: var(--color-heat-3);
+    text-shadow: 0 0 0 transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chunk {
+    animation: none;
+  }
+}
