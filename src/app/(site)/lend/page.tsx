@@ -14,6 +14,7 @@ const share = `${Math.round(LENDER_SHARE * 100)}%`;
 export const metadata: Metadata = {
   title: "Mine with your GPU",
   description: `Mine Bittensor's subnet 64 with data-center GPUs, or mine on Inferno from a browser tab and earn ${share} of each paid answer your GPU serves. Test your GPU and see which fits.`,
+  alternates: { canonical: "/lend" },
 };
 
 const wrap = "mx-auto max-w-7xl px-5 sm:px-8";

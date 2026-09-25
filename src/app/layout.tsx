@@ -26,10 +26,39 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#0b0a10", colorScheme: "dark" };
 
+// Tells search engines and AI assistants who runs this site and where its official X account is.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${site.url}/#org`,
+      name: site.name,
+      url: site.url,
+      logo: `${site.url}/icon.png`,
+      description: site.description,
+      sameAs: [site.x],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${site.url}/#website`,
+      name: site.name,
+      url: site.url,
+      description: site.tagline,
+      publisher: { "@id": `${site.url}/#org` },
+    },
+  ],
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${anybody.variable} ${hanken.variable}`}>
       <body className="min-h-dvh">
+        <script
+          type="application/ld+json"
+          // Escaped so no string in it can close the script tag.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+        />
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[70] focus:rounded-full focus:bg-moon focus:px-4 focus:py-2 focus:text-night"

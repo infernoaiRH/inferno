@@ -40,6 +40,7 @@ const columns: { title: string; links: { href: string; label: string; external?:
     links: [
       { href: "/#who-hears-what", label: "Who hears what" },
       { href: "/#faq", label: "Questions" },
+      { href: "/status", label: "Status" },
     ],
   },
 ];

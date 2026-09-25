@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { HushCanvas } from "@/components/hush/HushCanvas";
 import { ConnectionStatus, NetworkStats, RecentBlocks } from "@/components/network/NetworkLive";
 
-export const metadata: Metadata = { title: "Network" };
+export const metadata: Metadata = { title: "Network", alternates: { canonical: "/network" } };
 
 const ours = [
   { name: "Credits", status: "Live. Bought with USDG transfers to the treasury, counted once the chain finalizes them." },

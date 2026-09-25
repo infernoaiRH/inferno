@@ -13,6 +13,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Credits",
   description: "Top up Inferno credits by sending USDG from your wallet to the treasury on Robinhood Chain. Credits pay for AI answers.",
+  alternates: { canonical: "/credits" },
 };
 
 const wrap = "mx-auto max-w-7xl px-5 sm:px-8";

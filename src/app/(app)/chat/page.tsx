@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ChatApp } from "@/components/chat/ChatApp";
 
-export const metadata: Metadata = { title: "Chat" };
+export const metadata: Metadata = { title: "Chat", alternates: { canonical: "/chat" } };
 
 export default function ChatPage() {
   return (
