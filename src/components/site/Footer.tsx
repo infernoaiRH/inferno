@@ -52,7 +52,7 @@ export function Footer() {
         <div className="col-span-2 lg:col-span-1">
           <Logo />
           <p className="mt-4 max-w-xs text-[15px] text-hush">
-            AI chat on Bittensor and GPUs people lend. Lenders get paid in USDG on Robinhood Chain.
+            Private compute on Bittensor and GPUs people lend. Get paid in USDG on Robinhood Chain.
           </p>
           <Link
             href="/#bittensor"

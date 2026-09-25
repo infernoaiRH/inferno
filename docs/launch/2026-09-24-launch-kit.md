@@ -128,4 +128,4 @@ The brief asked for "earn and get easy money". The kit says "earn for every toke
 
 ## Logo note
 
-The site uses the dragon artwork in `src/components/brand/logo.png`; the favicon, home-screen icon and share image are made from it (see the README, "Logo"). Artwork based on another company's character, including a redraw, needs that company's written permission for commercial use.
+The mark is the τ on a sealed chip die, drawn in SVG (see the README, "Logo"); the favicon, home-screen icon and share image use the same drawing.

@@ -1,6 +1,6 @@
 # Inferno
 
-**Chat with AI on Bittensor and GPUs people lend.** Inferno is AI chat powered by [Bittensor](https://bittensor.com), paid on [Robinhood Chain](https://docs.robinhood.com/chain). Ask anything and a GPU answers: a miner on Bittensor subnet 64 ([Chutes](https://chutes.ai)) inside sealed hardware, one lent by someone else, or yours, right in the browser. Lenders get paid in USDG for every token.
+**Private compute, powered by Bittensor.** Inferno is a private compute network powered by [Bittensor](https://bittensor.com), paid on [Robinhood Chain](https://docs.robinhood.com/chain). Run open models on a miner on Bittensor subnet 64 ([Chutes](https://chutes.ai)) inside sealed hardware, on a GPU someone lends, or on yours, right in the browser. Mine with your GPU, send sealed messages between wallets, and get paid in USDG for every token you serve.
 
 Inferno is independent and is not affiliated with Robinhood Markets, Inc.
 
@@ -49,7 +49,7 @@ Copy `.env.example` to `.env.local`. Everything is optional.
 
 ## Logo
 
-The logo is the dragon artwork in `src/components/brand/logo.png`, a transparent PNG cut out of the designer's file. `Logo.tsx` shows it in the nav, footer, 404 page and demo chat, and `src/app/opengraph-image.tsx` puts it on the share image. The favicon (`src/app/icon.png`, 96 x 96, transparent) and home-screen icon (`src/app/apple-icon.png`, 180 x 180 on night `#0b0a10`) are sized copies of it. To change the logo, replace all three PNGs.
+The mark is the τ glowing on a sealed chip die, drawn in SVG with the theme colours in `src/components/brand/Logo.tsx` (the τ strokes live in `src/components/brand/Tau.tsx`). `src/app/opengraph-image.tsx` repeats it in hex for the share image, and the favicon (`src/app/icon.png`, 96 x 96) and home-screen icon (`src/app/apple-icon.png`, 180 x 180 on night `#0b0a10`) are PNGs rendered from the same drawing. Change the drawing in all three places together.
 
 ## Stack and design
 

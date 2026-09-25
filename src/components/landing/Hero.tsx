@@ -47,11 +47,12 @@ export function Hero() {
             </span>
           </Link>
           <h1 id="hero-title" className="wide mt-6 text-[clamp(2.5rem,5.4vw,4.75rem)] leading-[0.92] font-black tracking-[-0.02em]">
-            Chat with AI on <span className="heat-text">Bittensor</span> and GPUs people lend.
+            Private compute, powered by <span className="heat-text">Bittensor</span>.
           </h1>
           <p className="mt-8 max-w-[60ch] text-lg text-hush sm:text-xl">
-            Ask anything. Miners on Bittensor subnet 64 answer inside sealed hardware, so they can&apos;t read your words. Or
-            pick a GPU someone lends, or your own GPU in private mode.{" "}
+            Run open models on Bittensor subnet 64, where miners work inside sealed hardware and can&apos;t read your
+            words, or on a GPU someone lends, or on your own. Mine with your GPU, and send sealed messages between
+            wallets.{" "}
             {credits
               ? "Pay with credits on Robinhood Chain, or with your own Chutes key."
               : "Pay with your own Chutes key, or with credits on Robinhood Chain when payments are on."}
