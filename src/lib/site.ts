@@ -2,9 +2,9 @@
 export const site = {
   name: "Inferno",
   wordmark: "inferno",
-  tagline: "Chat with AI that runs on GPUs people lend.",
+  tagline: "Chat with AI on Bittensor and GPUs people lend.",
   description:
-    "Inferno is an AI inference network on Robinhood Chain. Chat with open models served by GPUs people lend, or lend yours and get paid in USDG.",
+    "Inferno is AI chat powered by Bittensor. Open models answer from miners on Bittensor subnet 64 inside sealed hardware, from GPUs people lend, or from your own GPU in private mode. Lend yours and get paid in USDG on Robinhood Chain.",
   // On Vercel, the production domain (vercel.app or a custom one) unless NEXT_PUBLIC_SITE_URL says otherwise.
   url:
     process.env.NEXT_PUBLIC_SITE_URL ??

@@ -98,7 +98,7 @@ export function LenderPanel({ picked, onPick, onClose }: Props) {
             type="button"
             onClick={onClose}
             aria-label="Close the lender list"
-            className="-mt-1 -mr-1 shrink-0 rounded-full p-2 text-hush hover:text-mist"
+            className="-mt-2 -mr-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-hush hover:text-mist"
           >
             <X size={18} />
           </button>
@@ -166,7 +166,7 @@ export function LenderPanel({ picked, onPick, onClose }: Props) {
             autoComplete="off"
             autoCapitalize="off"
             spellCheck={false}
-            className="tnum h-10 min-w-0 flex-1 rounded-full border border-line bg-night px-4 text-[15px] text-mist placeholder:text-faint focus:border-flame/70 focus:ring-2 focus:ring-flame/20 focus:outline-none"
+            className="tnum h-10 min-w-0 flex-1 rounded-full border border-line bg-night px-4 text-base text-mist placeholder:text-faint focus:border-flame/70 focus:ring-2 focus:ring-flame/20 focus:outline-none sm:text-[15px]"
           />
           <Button type="submit" variant="quiet" disabled={!address.trim()}>
             Use

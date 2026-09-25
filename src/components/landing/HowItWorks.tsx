@@ -14,7 +14,7 @@ const steps = [
   {
     Icon: Gpu,
     title: "A GPU answers",
-    body: "Your own, through WebGPU. A lender's, picked by wallet address, in the network beta. Or a Bittensor miner's, inside sealed hardware, so the miner can't read your words.",
+    body: "A Bittensor miner's, on subnet 64, inside sealed hardware, so the miner can't read your words. A lender's, picked by wallet address, in the network beta. Or your own, through WebGPU.",
     node: "1.1s",
     rail: "2s",
   },

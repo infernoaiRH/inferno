@@ -1,4 +1,5 @@
 import { Hero } from "@/components/landing/Hero";
+import { SubnetStrip } from "@/components/landing/SubnetStrip";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { ChatShowcase } from "@/components/landing/ChatShowcase";
 import { BittensorSection } from "@/components/landing/BittensorSection";
@@ -15,9 +16,10 @@ export default function Home() {
   return (
     <>
       <Hero />
+      <SubnetStrip />
+      <BittensorSection />
       <HowItWorks />
       <ChatShowcase />
-      <BittensorSection />
       <LendTeaser />
       <ChainSection />
       <Pricing />

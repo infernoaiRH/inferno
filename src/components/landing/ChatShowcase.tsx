@@ -1,4 +1,5 @@
-import { Check, ChevronDown, Gpu, Laptop, Pickaxe } from "lucide-react";
+import { Check, ChevronDown, Gpu, Laptop } from "lucide-react";
+import { Tau } from "@/components/brand/Tau";
 import { ButtonLink } from "@/components/ui/Button";
 import { Title } from "@/components/landing/Title";
 import { cn } from "@/lib/cn";
@@ -68,14 +69,14 @@ export function ChatShowcase() {
           <div className="relative -mt-3 rounded-3xl border border-line-bright bg-night-2 shadow-[0_40px_120px_-48px_var(--color-heat-2)]">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3 text-[13px]">
               <span className="flex rounded-full border border-line p-1">
+                <span className="flex items-center gap-1.5 px-3 py-1 text-hush">
+                  <Tau className="hidden text-[14px] sm:block" /> Bittensor
+                </span>
                 <span className="flex items-center gap-1.5 rounded-full bg-night-3 px-3 py-1 text-mist">
                   <Laptop size={14} className="hidden sm:block" /> Private
                 </span>
                 <span className="flex items-center gap-1.5 px-3 py-1 text-hush">
                   <Gpu size={14} className="hidden sm:block" /> Network
-                </span>
-                <span className="flex items-center gap-1.5 px-3 py-1 text-hush">
-                  <Pickaxe size={14} className="hidden sm:block" /> Bittensor
                 </span>
               </span>
               <span className="flex items-center gap-1.5 rounded-full border border-flame/60 px-3 py-1.5">

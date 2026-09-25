@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Command, Menu, X } from "lucide-react";
 import { togglePalette } from "@/components/palette/CommandPalette";
 import { site } from "@/lib/site";
 import { cn } from "@/lib/cn";
 import { Logo } from "@/components/brand/Logo";
+import { Tau } from "@/components/brand/Tau";
 import { ConnectButton } from "@/components/wallet/ConnectButton";
 import { LivePulse } from "@/components/site/LivePulse";
 
@@ -15,6 +16,7 @@ export function Nav({ variant = "site" }: { variant?: "site" | "app" }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const header = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const on = () => setScrolled(window.scrollY > 8);
@@ -23,10 +25,25 @@ export function Nav({ variant = "site" }: { variant?: "site" | "app" }) {
     return () => window.removeEventListener("scroll", on);
   }, []);
 
+  // The phone menu closes on Escape or a tap anywhere outside the header.
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: KeyboardEvent | PointerEvent) => {
+      if (e instanceof KeyboardEvent ? e.key === "Escape" : !header.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("keydown", close);
+    document.addEventListener("pointerdown", close);
+    return () => {
+      document.removeEventListener("keydown", close);
+      document.removeEventListener("pointerdown", close);
+    };
+  }, [open]);
+
   const solid = scrolled || open || variant === "app";
 
   return (
     <header
+      ref={header}
       className={cn(
         "sticky top-0 z-40 border-b transition-[background-color,border-color] duration-500",
         solid ? "border-line/70 bg-night/80 backdrop-blur-xl" : "border-transparent bg-transparent",
@@ -36,7 +53,7 @@ export function Nav({ variant = "site" }: { variant?: "site" | "app" }) {
         <Link href="/" aria-label={`${site.name} home`} className="shrink-0">
           <Logo />
         </Link>
-        <ul className="hidden items-center gap-1 md:flex">
+        <ul className="hidden items-center gap-1 lg:flex">
           {site.nav.map((l) => {
             const active = pathname === l.href;
             return (
@@ -56,6 +73,16 @@ export function Nav({ variant = "site" }: { variant?: "site" | "app" }) {
           })}
         </ul>
         <div className="ml-auto flex items-center gap-3">
+          {/* Short at lg so the row fits 1024 px; the full line from xl, where there's room. */}
+          <Link
+            href="/#bittensor"
+            className="hidden h-9 items-center gap-2 rounded-full border border-heat-2/50 px-3.5 text-[14px] whitespace-nowrap text-hush transition-colors hover:border-heat-3 hover:text-mist lg:inline-flex"
+          >
+            <Tau className="text-heat-4" />
+            <span>
+              <span className="hidden xl:inline">Powered by </span>Bittensor
+            </span>
+          </Link>
           {/* App pages stay network-quiet: no chain polling behind a private chat. */}
           {variant === "site" && <LivePulse className="hidden xl:flex" />}
           <button
@@ -68,7 +95,7 @@ export function Nav({ variant = "site" }: { variant?: "site" | "app" }) {
           </button>
           <ConnectButton className="hidden sm:inline-flex" />
           <button
-            className="flex h-10 w-10 items-center justify-center rounded-full text-hush hover:text-mist md:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-hush hover:text-mist lg:hidden"
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
             aria-controls="mobile-menu"
@@ -79,7 +106,7 @@ export function Nav({ variant = "site" }: { variant?: "site" | "app" }) {
         </div>
       </nav>
       {open && (
-        <div id="mobile-menu" className="border-t border-line/70 px-5 pb-6 md:hidden">
+        <div id="mobile-menu" className="border-t border-line/70 px-5 pb-6 lg:hidden">
           <ul className="flex flex-col py-2">
             {site.nav.map((l) => (
               <li key={l.href}>
@@ -89,8 +116,16 @@ export function Nav({ variant = "site" }: { variant?: "site" | "app" }) {
               </li>
             ))}
           </ul>
+          <Link
+            href="/#bittensor"
+            onClick={() => setOpen(false)}
+            className="mb-5 inline-flex min-h-11 items-center gap-2 rounded-full border border-heat-2/50 px-4 text-[15px] text-hush"
+          >
+            <Tau className="text-heat-4" />
+            Powered by Bittensor subnet 64
+          </Link>
           <div className="flex items-center justify-between gap-3">
-            {variant === "site" ? <LivePulse className="flex" /> : <span />}
+            {variant === "site" ? <LivePulse className="flex min-h-10" /> : <span />}
             <ConnectButton />
           </div>
         </div>

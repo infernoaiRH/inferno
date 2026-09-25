@@ -452,7 +452,7 @@ function Composer({ name, onSend }: { name: string; onSend: (text: string) => vo
             submit();
           }
         }}
-        className="field-sizing-content max-h-40 min-h-11 min-w-0 flex-1 resize-none rounded-3xl border border-line bg-night-2 px-4 py-2.5 text-[15px] transition-colors placeholder:text-faint hover:border-line-bright focus:border-moon/60"
+        className="field-sizing-content max-h-40 min-h-11 min-w-0 flex-1 resize-none rounded-3xl border border-line bg-night-2 px-4 py-2.5 text-base transition-colors placeholder:text-faint hover:border-line-bright focus:border-moon/60 sm:text-[15px]"
       />
       <Button type="submit" disabled={!draft.trim()} className="h-11">
         Seal and send

@@ -1,9 +1,10 @@
 "use client";
 
-import { Suspense, useRef, useState } from "react";
+import { Suspense, useRef, useState, type ComponentProps } from "react";
 import { flushSync } from "react-dom";
 import { useSearchParams } from "next/navigation";
-import { Cpu, Network, PanelLeft, Pickaxe } from "lucide-react";
+import { Cpu, Network, PanelLeft } from "lucide-react";
+import { Tau } from "@/components/brand/Tau";
 import type { ChutesModel } from "@/lib/bittensor/chutes";
 import { useChutes, useChutesKey, useCreditsEnabled, type ChutesBill, type Pay } from "@/lib/bittensor/client";
 import { cn } from "@/lib/cn";
@@ -207,7 +208,7 @@ function Chat({ linked }: { linked: Mode }) {
             type="button"
             onClick={() => drawer.current?.showModal()}
             aria-label="Show saved chats"
-            className="rounded-full p-2 text-hush hover:text-mist md:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-hush hover:text-mist md:hidden"
           >
             <PanelLeft size={18} />
           </button>
@@ -230,7 +231,9 @@ function Chat({ linked }: { linked: Mode }) {
             open={panelOpen}
             onToggle={() => setChanging((c) => !c)}
           />
-          {mode === "bittensor" && <p className="order-last w-full px-1 text-sm text-hush">{TRUST}</p>}
+          {mode === "bittensor" && (
+            <p className="order-last w-full px-1 text-xs leading-snug text-hush sm:text-sm sm:leading-normal">{TRUST}</p>
+          )}
         </div>
 
         <Messages key={activeId ?? "new"} messages={messages} draft={draft?.chatId === activeId ? draft : null}>
@@ -312,10 +315,19 @@ function Chat({ linked }: { linked: Mode }) {
   );
 }
 
+/** Tau, sized and classed like a lucide icon, so it can stand in for `Icon` in MODES below. */
+function TauIcon({ size, className }: ComponentProps<typeof Cpu>) {
+  return (
+    <span style={{ fontSize: size }} className={className}>
+      <Tau />
+    </span>
+  );
+}
+
 const MODES = [
+  { mode: "bittensor", Icon: TauIcon, name: "Bittensor", more: "sealed miners", tag: "SN64" },
   { mode: "private", Icon: Cpu, name: "Private", more: "on this device" },
   { mode: "network", Icon: Network, name: "Network", more: "GPUs people lend", tag: "Beta" },
-  { mode: "bittensor", Icon: Pickaxe, name: "Bittensor", more: "sealed miners", tag: "SN64" },
 ] as const;
 
 type SwitchProps = { mode: Mode; disabled: boolean; onChange: (mode: Mode) => void; className?: string };
@@ -337,7 +349,7 @@ function ModeSwitch({ mode, disabled, onChange, className }: SwitchProps) {
           onClick={() => onChange(o.mode)}
           title={o.mode === "bittensor" ? TRUST : undefined}
           className={cn(
-            "flex flex-1 items-center justify-center gap-1.5 rounded-full px-2 py-1.5 transition-colors sm:flex-none sm:gap-2 sm:px-3",
+            "flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-full px-2 py-1.5 transition-colors sm:flex-none sm:gap-2 sm:px-3",
             o.mode === mode ? "bg-night-3 text-mist" : "text-hush enabled:hover:text-mist disabled:text-faint",
           )}
         >
@@ -363,7 +375,7 @@ function ModelChip({ label, dot, ready, change, busy, open, onToggle }: ChipProp
       disabled={!ready || busy}
       aria-expanded={ready ? open : undefined}
       aria-label={ready && !busy ? `${label}. ${change}` : undefined}
-      className="ml-auto flex min-w-0 items-center gap-2 rounded-full border border-line px-3 py-1.5 text-sm text-hush transition-colors enabled:hover:border-line-bright enabled:hover:text-mist"
+      className="ml-auto flex min-h-10 min-w-0 items-center gap-2 rounded-full border border-line px-3 py-1.5 text-sm text-hush transition-colors enabled:hover:border-line-bright enabled:hover:text-mist"
     >
       <span aria-hidden className={cn("size-2 shrink-0 rounded-full", dot)} />
       <span className="truncate">{label}</span>

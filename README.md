@@ -1,6 +1,6 @@
 # Inferno
 
-**Chat with AI that runs on GPUs people lend.** Inferno is an AI inference network on [Robinhood Chain](https://docs.robinhood.com/chain). Ask anything and a GPU answers: yours, right in the browser, or one lent by someone else. Lenders get paid in USDG for every token.
+**Chat with AI on Bittensor and GPUs people lend.** Inferno is AI chat powered by [Bittensor](https://bittensor.com), paid on [Robinhood Chain](https://docs.robinhood.com/chain). Ask anything and a GPU answers: a miner on Bittensor subnet 64 ([Chutes](https://chutes.ai)) inside sealed hardware, one lent by someone else, or yours, right in the browser. Lenders get paid in USDG for every token.
 
 Inferno is independent and is not affiliated with Robinhood Markets, Inc.
 

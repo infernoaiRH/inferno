@@ -41,7 +41,7 @@ export function Messages({ messages, draft, children }: { messages: Msg[]; draft
         const el = e.currentTarget;
         stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 48;
       }}
-      className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+      className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain"
     >
       <div className="mx-auto flex max-w-3xl flex-col gap-9 px-4 py-6 sm:px-6 sm:py-10">
         {messages.map((m, i) => (

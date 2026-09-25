@@ -18,7 +18,7 @@ const hanken = Hanken_Grotesk({ subsets: ["latin"], variable: "--font-hanken", d
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
-  title: { default: `${site.name}: AI chat on GPUs people lend, paid on Robinhood Chain`, template: `%s | ${site.name}` },
+  title: { default: `${site.name}: AI chat on Bittensor, paid on Robinhood Chain`, template: `%s | ${site.name}` },
   description: site.description,
   openGraph: { title: site.name, description: site.description, siteName: site.name, type: "website" },
   twitter: { card: "summary_large_image", title: site.name, description: site.description },

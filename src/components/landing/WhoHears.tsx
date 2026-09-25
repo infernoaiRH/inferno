@@ -1,40 +1,51 @@
-import { Gpu, Laptop, Mail, Pickaxe } from "lucide-react";
+import { type ComponentProps } from "react";
+import { Gpu, Laptop, Mail } from "lucide-react";
+import { Tau } from "@/components/brand/Tau";
 import { Title } from "@/components/landing/Title";
 
+/** Adapts the em-sized, className-only `Tau` to the lucide `<Icon size .../>` call sites below. */
+function TauIcon({ size, className }: ComponentProps<typeof Gpu>) {
+  return (
+    <span style={{ fontSize: size }} className={className}>
+      <Tau />
+    </span>
+  );
+}
+
 const modes = [
+  { Icon: TauIcon, name: "Bittensor chat" },
   { Icon: Laptop, name: "Private chat" },
   { Icon: Gpu, name: "Network chat" },
-  { Icon: Pickaxe, name: "Bittensor chat" },
   { Icon: Mail, name: "Sealed messages" },
 ];
 
 const rows = [
   [
     "Your words",
+    "Chutes' gateway, in memory, and Inferno's server in passing when you pay with credits. Miners can't read them.",
     "Only you",
     "You and the lender whose GPU serves the request",
-    "Chutes' gateway, in memory, and Inferno's server in passing when you pay with credits. Miners can't read them.",
     "You and the recipient",
   ],
   [
     "Your wallet",
+    "No one with your own key; Inferno's server when you pay with credits.",
     "No one. No wallet needed.",
     "Inferno's server, to bill your credits. Your top-ups are public on Robinhood Chain. Lenders never see it.",
-    "No one with your own key; Inferno's server when you pay with credits.",
     "The recipient, and the relay that routes the envelope",
   ],
   [
     "Who and when",
+    "Chutes sees request time and size, and so does Inferno when you pay with credits.",
     "No one",
     "Inferno sees request time and size to bill you",
-    "Chutes sees request time and size, and so does Inferno when you pay with credits.",
     "The relay sees sender, recipient and time, never content",
   ],
   [
     "Payments",
+    "Your Chutes account, or Inferno credits on Robinhood Chain.",
     "Nothing to pay",
     "Public on Robinhood Chain, like any transfer",
-    "Your Chutes account, or Inferno credits on Robinhood Chain.",
     "Free during beta",
   ],
 ];
@@ -96,7 +107,7 @@ export function WhoHears() {
         </tbody>
       </table>
       <p className="mt-6 text-sm text-hush">
-        Private chat, network chat and Bittensor chat work today. Sealed messages still run on a demo relay that keeps
+        Bittensor chat, private chat and network chat work today. Sealed messages still run on a demo relay that keeps
         everything in your browser.
       </p>
     </section>

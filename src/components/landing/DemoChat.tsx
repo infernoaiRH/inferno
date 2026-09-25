@@ -4,10 +4,17 @@ import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { ArrowUp, ReceiptText } from "lucide-react";
 import { LogoMark } from "@/components/brand/Logo";
+import { Tau } from "@/components/brand/Tau";
 import { cn } from "@/lib/cn";
 
 /** Scripted exchanges. `rate` is the tokens/s on the receipt; it also sets the pacing and how hot the words glow. */
 const SCRIPT = [
+  {
+    q: "Is there a much bigger model that keeps my question private?",
+    a: "Yes, on Bittensor. A miner on subnet 64 answers with a big open model like DeepSeek-V3.2, inside sealed hardware, so the miner can't read your words. Chutes' gateway passes them along in memory and doesn't keep them.",
+    rate: 42,
+    receipt: "Served on Bittensor subnet 64 (Chutes), confidential compute. DeepSeek-V3.2, 54 tokens at 42 tokens/s. $0.0001, billed to your Chutes account.",
+  },
   {
     q: "What does a GPU do when I ask you something?",
     a: "It does the maths that picks each next word. A model is billions of numbers, and a GPU multiplies thousands of them at once. That's why a gaming card can write faster than you can read.",
@@ -19,12 +26,6 @@ const SCRIPT = [
     a: "Yes. Switch to private mode and I run on your own GPU, inside this browser tab. Your question and my answer never leave your device, and it costs nothing.",
     rate: 24,
     receipt: "Llama 3.2 1B on your GPU (Apple M3), in private mode. 96 tokens at 24 tokens/s. Free, and nothing left this tab.",
-  },
-  {
-    q: "Is there a much bigger model that keeps my question private?",
-    a: "Yes, on Bittensor. A miner on subnet 64 answers with a big open model like DeepSeek-V3.2, inside sealed hardware, so the miner can't read your words. Chutes' gateway passes them along in memory and doesn't keep them.",
-    rate: 42,
-    receipt: "Served on Bittensor subnet 64 (Chutes), confidential compute. DeepSeek-V3.2, 54 tokens at 42 tokens/s. $0.0001, billed to your Chutes account.",
   },
   {
     q: "I have a gaming PC. Could it earn?",
@@ -152,7 +153,11 @@ function Turn({ ex, n }: { ex: Exchange; n?: number }) {
       </p>
       {(n === undefined || n > ex.words.length) && (
         <p className="mt-3 flex animate-rise gap-2 border-t border-dashed border-line-bright pt-3 text-[13px] leading-snug text-hush">
-          <ReceiptText aria-hidden size={15} className="mt-px shrink-0" />
+          {ex.receipt.startsWith("Served on Bittensor") ? (
+            <Tau className="mt-px shrink-0 text-heat-4" />
+          ) : (
+            <ReceiptText aria-hidden size={15} className="mt-px shrink-0" />
+          )}
           {ex.receipt}
         </p>
       )}

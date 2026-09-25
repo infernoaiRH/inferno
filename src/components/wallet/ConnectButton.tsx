@@ -50,7 +50,7 @@ export function WalletPickerModal({ onClose }: { onClose: () => void }) {
           </h2>
           <button
             onClick={onClose}
-            className="-mt-1 -mr-2 flex h-9 w-9 items-center justify-center rounded-full text-hush transition-colors hover:text-mist"
+            className="-mt-1.5 -mr-2.5 flex h-10 w-10 items-center justify-center rounded-full text-hush transition-colors hover:text-mist"
             aria-label="Close"
           >
             <X size={18} />

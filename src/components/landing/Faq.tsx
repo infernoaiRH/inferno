@@ -3,6 +3,14 @@ import { Title } from "@/components/landing/Title";
 
 const faqs = [
   {
+    q: "What is Bittensor, and how does Inferno use it?",
+    a: "Bittensor is a decentralized network where miners compete to serve AI, and the network pays them in TAO. Inferno's Bittensor mode asks subnet 64, run by Chutes, where miners serve big open models inside confidential-compute hardware, so they can't read your prompts. Chutes' gateway handles your words in memory and, by its privacy policy, doesn't store them.",
+  },
+  {
+    q: "Can I pay with TAO?",
+    a: "Once the operator switches it on. TAO is on Robinhood Chain through Chainlink's bridge, and Inferno can accept it for credits; the credits page lists what this server takes today. If you use your own Chutes key, Chutes takes TAO directly.",
+  },
+  {
     q: "Is Inferno part of Robinhood?",
     a: "No. Inferno is independent and built on Robinhood Chain, a public network anyone can build on. It isn't affiliated with or endorsed by Robinhood Markets.",
   },
@@ -13,14 +21,6 @@ const faqs = [
   {
     q: "Which models can I run now?",
     a: "SmolLM2 360M, Llama 3.2 1B and Qwen2.5 1.5B, in private mode on your own GPU, or on a lender's GPU in the network beta. The first load downloads the model once, from about 400 MB to 2 GB, and your browser keeps it. For much bigger models, like DeepSeek, Qwen3.5 397B, Kimi and GLM, switch to Bittensor mode.",
-  },
-  {
-    q: "What is Bittensor, and how does Inferno use it?",
-    a: "Bittensor is a decentralized network where miners compete to serve AI, and the network pays them in TAO. Inferno's Bittensor mode asks subnet 64, run by Chutes, where miners serve big open models inside confidential-compute hardware, so they can't read your prompts. Chutes' gateway handles your words in memory and, by its privacy policy, doesn't store them.",
-  },
-  {
-    q: "Can I pay with TAO?",
-    a: "Once the operator switches it on. TAO is on Robinhood Chain through Chainlink's bridge, and Inferno can accept it for credits; the credits page lists what this server takes today. If you use your own Chutes key, Chutes takes TAO directly.",
   },
   {
     q: "How does mining pay?",

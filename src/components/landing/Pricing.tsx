@@ -21,13 +21,13 @@ function wordsAt(pos: number) {
 const tokensPerMonth = (wordsPerDay: number) => wordsPerDay * 40;
 
 const models = [
-  { name: "Private mode", detail: "Runs on your GPU, in your browser", usdPer1k: 0 },
-  { name: "Network model", detail: `A lender's GPU, ${formatUsd(USD_PER_1K_TOKENS)} per 1,000 tokens`, usdPer1k: USD_PER_1K_TOKENS },
   {
     name: "Bittensor model",
     detail: `Chutes' price for the model, plus ${Math.round(BITTENSOR_MARGIN * 100)}% when you pay with credits`,
     usdPer1k: null,
   },
+  { name: "Private mode", detail: "Runs on your GPU, in your browser", usdPer1k: 0 },
+  { name: "Network model", detail: `A lender's GPU, ${formatUsd(USD_PER_1K_TOKENS)} per 1,000 tokens`, usdPer1k: USD_PER_1K_TOKENS },
 ];
 
 export function Pricing() {

@@ -26,7 +26,7 @@ export function Rail({ chats, activeId, storageFull, onSelect, onNew, onDelete, 
             type="button"
             onClick={onClose}
             aria-label="Close saved chats"
-            className="rounded-full p-2 text-hush hover:text-mist"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-hush hover:text-mist"
           >
             <X size={18} />
           </button>

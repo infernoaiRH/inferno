@@ -1,87 +1,50 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { ExternalLink, LockKeyhole } from "lucide-react";
+import { Tau } from "@/components/brand/Tau";
 import { Title } from "@/components/landing/Title";
 import { ButtonLink, buttonClass } from "@/components/ui/Button";
-import { BITTENSOR_MARGIN, chutesModels, type ChutesModel } from "@/lib/bittensor/chutes";
+import { BITTENSOR_MARGIN } from "@/lib/bittensor/chutes";
+import { useSubnet } from "@/lib/bittensor/useSubnet";
 import { cn } from "@/lib/cn";
-import { formatUsd } from "@/lib/format";
 
 const link = "text-flame underline decoration-flame/40 underline-offset-4 hover:decoration-flame";
-const perMillion = (usd: number) => formatUsd(usd, usd >= 0.1 ? 2 : 4);
-
-/** Up to six models, one per maker in Chutes' own order, so the strip shows the range rather than one family's sizes. */
-function onePerMaker(models: ChutesModel[]) {
-  const makers = new Set<string>();
-  return models
-    .filter((m) => {
-      const maker = m.id.split("/")[0];
-      if (makers.has(maker)) return false;
-      makers.add(maker);
-      return true;
-    })
-    .slice(0, 6);
-}
-
-const ways: { term: string; status: string; live?: boolean; detail: ReactNode }[] = [
-  {
-    term: "Your own Chutes key",
-    status: "Live",
-    live: true,
-    detail:
-      "Paste a key from chutes.ai and answers bill your Chutes account, which takes TAO too. The key stays in your browser and goes only to Chutes.",
-  },
-  {
-    term: "Inferno credits",
-    status: "When payments are on",
-    detail: (
-      <>
-        Send USDG from your wallet to Inferno on Robinhood Chain, or TAO once the operator switches it on. Each answer
-        costs Chutes&apos; price plus {Math.round(BITTENSOR_MARGIN * 100)}%, our planned margin. The{" "}
-        <Link href="/credits" className={link}>
-          credits page
-        </Link>{" "}
-        shows what this server takes today.
-      </>
-    ),
-  },
-];
 
 /** Is Bittensor in here? What it is, what Inferno uses, what's live on subnet 64 right now, and how to pay. */
 export function BittensorSection() {
-  const strip = useRef<HTMLDivElement>(null);
-  const [models, setModels] = useState<ChutesModel[] | null>(null);
-  const [failed, setFailed] = useState(false);
+  const { models, loading, credits } = useSubnet();
 
-  // Asks Chutes only once the strip nears the screen, so a visit that never scrolls here never contacts it.
-  useEffect(() => {
-    let live = true;
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (!e.isIntersecting) return;
-        io.disconnect();
-        chutesModels().then(
-          (m) => live && setModels(m),
-          () => live && setFailed(true),
-        );
-      },
-      { rootMargin: "600px 0px" },
-    );
-    if (strip.current) io.observe(strip.current);
-    return () => {
-      live = false;
-      io.disconnect();
-    };
-  }, []);
-
-  const shown = models ? onePerMaker(models) : [];
+  const ways: { term: string; status: string; live?: boolean; detail: ReactNode }[] = [
+    {
+      term: "Your own Chutes key",
+      status: "Live",
+      live: true,
+      detail:
+        "Paste a key from chutes.ai and answers bill your Chutes account, which takes TAO too. The key stays in your browser and goes only to Chutes.",
+    },
+    {
+      term: "Inferno credits",
+      status: credits ? "Live" : "When payments are on",
+      live: credits,
+      detail: (
+        <>
+          Send USDG from your wallet to Inferno on Robinhood Chain, or TAO once the operator switches it on. Each answer
+          costs Chutes&apos; price plus {Math.round(BITTENSOR_MARGIN * 100)}%, our planned margin. The{" "}
+          <Link href="/credits" className={link}>
+            credits page
+          </Link>{" "}
+          shows what this server takes today.
+        </>
+      ),
+    },
+  ];
 
   return (
     <section id="bittensor" aria-labelledby="bittensor-title" className="mx-auto max-w-7xl px-5 py-24 sm:px-8 sm:py-32">
-      <Title id="bittensor-title" q="Is Bittensor in here?">
-        Bittensor, built in.
+      <Title id="bittensor-title" q="What powers the answers?">
+        Powered by Bittensor.
       </Title>
       <div className="mt-14 grid gap-x-16 gap-y-14 lg:grid-cols-12 lg:items-center">
         <SealedChip className="lg:order-last lg:col-span-5" />
@@ -96,44 +59,24 @@ export function BittensorSection() {
             sealed enclave that stops the miner reading your prompts.
           </p>
 
-          <div ref={strip} className="mt-10">
-            <p className="flex items-center gap-2.5 text-[15px] text-hush">
-              <span
-                aria-hidden
-                className={cn("h-1.5 w-1.5 shrink-0 rounded-full", shown.length ? "animate-breathe bg-heat-5" : "bg-faint")}
-              />
-              {failed ? (
-                "Chutes' live model list didn't load. The chat asks again when you open it."
-              ) : models === null ? (
-                "Asking Chutes which models are live…"
-              ) : models.length === 0 ? (
-                "Chutes lists no sealed models right now."
-              ) : (
-                <span>
-                  <span className="tnum text-mist">{models.length}</span> models live on subnet 64 right now
-                </span>
-              )}
-            </p>
-            {shown.length > 0 && (
-              <ul className="mt-4 border-b border-line">
-                {shown.map((m) => (
-                  <li
-                    key={m.id}
-                    className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-0.5 border-t border-line py-3"
-                  >
-                    <span className="min-w-0 break-words text-mist">{m.name}</span>
-                    <span className="tnum text-[15px] text-hush">
-                      {perMillion(m.input)} in, {perMillion(m.output)} out
-                    </span>
-                  </li>
-                ))}
-              </ul>
+          <p className="mt-10 flex items-center gap-2.5 text-[15px] text-hush">
+            <span
+              aria-hidden
+              className={cn("h-1.5 w-1.5 shrink-0 rounded-full", models?.length ? "animate-breathe bg-heat-5" : "bg-faint")}
+            />
+            {loading ? (
+              "Asking subnet 64 which models are live…"
+            ) : models === null ? (
+              "Chutes' model list didn't load. The chat asks again when you open it."
+            ) : models.length === 0 ? (
+              "Chutes lists no sealed models right now."
+            ) : (
+              <span>
+                <span className="tnum text-mist">{models.length}</span> sealed models live on subnet 64 right now, listed
+                in the strip above.
+              </span>
             )}
-            <p className="mt-3 text-[13px] text-hush">
-              Chutes&apos; own prices per million tokens, read live from llm.chutes.ai. Only models in sealed hardware are
-              listed.
-            </p>
-          </div>
+          </p>
 
           <h3 className="mt-12 text-2xl">Two ways to pay</h3>
           <dl className="mt-4 border-b border-line">
@@ -196,7 +139,7 @@ function SealedChip({ className }: { className?: string }) {
           <span className="absolute top-[7%] left-[7%] size-[4%] rounded-full bg-line-bright" />
           <div className="absolute inset-[15%] flex flex-col items-center justify-center overflow-hidden rounded-[10%] border-2 border-dashed border-heat-3/70 bg-night">
             <span className="absolute inset-0 bg-[radial-gradient(circle,color-mix(in_oklab,var(--color-heat-2)_60%,transparent),transparent_70%)] motion-safe:animate-breathe" />
-            <span className="xwide heat-text relative font-display text-[length:24cqi] leading-none font-black">64</span>
+            <Tau className="relative text-heat-4 text-[length:26cqi] drop-shadow-[0_0_20px_var(--color-heat-3)] motion-safe:animate-breathe" />
             <span className="relative mt-2 flex items-center gap-1.5 text-[13px] text-hush">
               <LockKeyhole size={13} /> Sealed
             </span>

@@ -10,10 +10,10 @@ import { cn } from "@/lib/cn";
 type Item = { label: string; href: string } | { label: string; copy: string };
 
 const items: Item[] = [
+  { label: "Chat on Bittensor", href: "/chat?mode=bittensor" },
+  { label: "Mine on Bittensor", href: "/lend#mine-bittensor" },
   { label: "Chat", href: "/chat" },
   { label: "Mine with your GPU", href: "/lend" },
-  { label: "Mine on Bittensor", href: "/lend#mine-bittensor" },
-  { label: "Chat on Bittensor", href: "/chat?mode=bittensor" },
   { label: "Credits", href: "/credits" },
   { label: "Messages", href: "/messages" },
   { label: "Network", href: "/network" },

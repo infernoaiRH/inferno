@@ -54,7 +54,7 @@ export function ModelPanel({ gpu, status, onLoad, onClose }: Props) {
             type="button"
             onClick={onClose}
             aria-label="Close the model list"
-            className="-mt-1 -mr-1 shrink-0 rounded-full p-2 text-hush hover:text-mist"
+            className="-mt-2 -mr-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-hush hover:text-mist"
           >
             <X size={18} />
           </button>

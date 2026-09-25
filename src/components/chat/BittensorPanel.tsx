@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { X } from "lucide-react";
+import { Tau } from "@/components/brand/Tau";
 import { Button } from "@/components/ui/Button";
 import { BITTENSOR_MARGIN, MAX_TOKENS, chutesModels, type ChutesModel } from "@/lib/bittensor/chutes";
 import { saveChutesKey, useChutesKey, type Pay } from "@/lib/bittensor/client";
@@ -61,19 +62,20 @@ export function BittensorPanel({ picked, onPick, pay, onPay, credits, onClose }:
     <section ref={onClose ? reveal : undefined} aria-labelledby="bittensor-title" className={card}>
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 id="bittensor-title" className="text-2xl">
+          <p className="flex items-center gap-1.5 text-sm text-hush">
+            <Tau className="text-heat-4" />
+            Powered by Bittensor subnet 64, through Chutes. {TRUST}
+          </p>
+          <h2 id="bittensor-title" className="mt-1.5 text-2xl">
             Ask Bittensor subnet 64
           </h2>
-          <p className="mt-1.5 text-[15px] text-hush">
-            Open models served by Chutes, subnet 64 on Bittensor. {TRUST}
-          </p>
         </div>
         {onClose && (
           <button
             type="button"
             onClick={onClose}
             aria-label="Close the Bittensor settings"
-            className="-mt-1 -mr-1 shrink-0 rounded-full p-2 text-hush hover:text-mist"
+            className="-mt-2 -mr-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-hush hover:text-mist"
           >
             <X size={18} />
           </button>
@@ -130,7 +132,7 @@ export function BittensorPanel({ picked, onPick, pay, onPay, credits, onClose }:
                   autoComplete="off"
                   autoCapitalize="off"
                   spellCheck={false}
-                  className="h-10 min-w-0 flex-1 rounded-full border border-line bg-night px-4 text-[15px] text-mist placeholder:text-faint focus:border-flame/70 focus:ring-2 focus:ring-flame/20 focus:outline-none"
+                  className="h-10 min-w-0 flex-1 rounded-full border border-line bg-night px-4 text-base text-mist placeholder:text-faint focus:border-flame/70 focus:ring-2 focus:ring-flame/20 focus:outline-none sm:text-[15px]"
                 />
                 <Button type="submit" variant="quiet" disabled={!key.trim()}>
                   Save

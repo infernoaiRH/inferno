@@ -13,7 +13,7 @@ const share = `${Math.round(LENDER_SHARE * 100)}%`;
 
 export const metadata: Metadata = {
   title: "Mine with your GPU",
-  description: `Mine on Inferno from a browser tab and earn ${share} of each paid answer your GPU serves, or mine Bittensor's subnet 64 with data-center GPUs. Test your GPU and see which fits.`,
+  description: `Mine Bittensor's subnet 64 with data-center GPUs, or mine on Inferno from a browser tab and earn ${share} of each paid answer your GPU serves. Test your GPU and see which fits.`,
 };
 
 const wrap = "mx-auto max-w-7xl px-5 sm:px-8";
@@ -21,17 +21,17 @@ const split = "grid gap-x-16 gap-y-10 py-20 sm:py-28 lg:grid-cols-[minmax(0,5fr)
 
 const lanes = [
   {
+    href: "#mine-bittensor",
+    title: "Mine on Bittensor, with data-center GPUs",
+    detail: "Run open models for Chutes on subnet 64, inside confidential-compute servers, and earn subnet 64's alpha token.",
+    status: "Live on Bittensor. Needs eight data-center GPUs, and TAO to register.",
+  },
+  {
     href: "#serve",
     title: "Mine on Inferno, right in your browser",
     detail:
       "Load an open model on your GPU and answer chats for people on Inferno. Any recent GPU with WebGPU, and nothing to install.",
     status: `Live beta. When the site has payments on, you earn ${share} of each answer, paid out by hand in USDG.`,
-  },
-  {
-    href: "#mine-bittensor",
-    title: "Mine on Bittensor, with data-center GPUs",
-    detail: "Run open models for Chutes on subnet 64, inside confidential-compute servers, and earn subnet 64's alpha token.",
-    status: "Live on Bittensor. Needs eight data-center GPUs, and TAO to register.",
   },
 ];
 
@@ -84,10 +84,10 @@ export default function LendPage() {
   return (
     <>
       <section aria-labelledby="mine-title" className={cn(wrap, "pt-16 pb-20 sm:pt-24 sm:pb-28")}>
-        {/* 2.5rem floor: "Bittensor." is the widest word and must fit 320px of content at a 360px viewport. */}
+        {/* 2.5rem floor: "Bittensor," is the widest word and must fit 320px of content at a 360px viewport. */}
         <h1 id="mine-title" className="wide text-[clamp(2.5rem,7.5vw,6rem)] leading-[0.92]">
           <span className="block">Mine with your GPU.</span>
-          <span className="heat-text block">In a browser, or on Bittensor.</span>
+          <span className="heat-text block">On Bittensor, or in a browser.</span>
         </h1>
         <p className="mt-10 max-w-[58ch] text-lg text-hush sm:text-xl">
           Mining here means your GPU answers people&apos;s AI questions and earns for the work. There are two ways in, and the
@@ -116,6 +116,8 @@ export default function LendPage() {
           <p className="text-[15px] text-hush">Not sure what yours can do? The test runs right in this tab.</p>
         </div>
       </section>
+
+      <BittensorMining />
 
       <GpuEstimator />
 
@@ -161,8 +163,6 @@ export default function LendPage() {
           </div>
         </div>
       </section>
-
-      <BittensorMining />
     </>
   );
 }

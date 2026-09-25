@@ -194,7 +194,7 @@ export function BittensorMining() {
             <p className="mt-5 max-w-[52ch] text-hush">
               Not if it&apos;s a gaming PC, a laptop or a Mac. Subnet 64 only takes servers that prove, in hardware, that
               nobody can look inside: an Intel TDX confidential VM with NVIDIA confidential computing on. Consumer cards like
-              the RTX 4090 don&apos;t have it. The GPU test above measures speed, so it can&apos;t change that answer, but
+              the RTX 4090 don&apos;t have it. The GPU test below measures speed, so it can&apos;t change that answer, but
               those cards are a good fit for mining on Inferno, right in your browser.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">

@@ -5,28 +5,6 @@ import { cn } from "@/lib/cn";
 
 const lanes = [
   {
-    Icon: Gpu,
-    title: "Mine on Inferno",
-    status: "Live beta",
-    live: true,
-    where: "From any computer with a WebGPU browser, like a gaming PC. Nothing to install.",
-    facts: [
-      {
-        term: "What you do",
-        detail:
-          "Load a model in a browser tab and go online. Your GPU answers chats on Inferno's own network, for people who pick you by wallet address.",
-      },
-      {
-        term: "What you earn",
-        detail:
-          "70% of what each answer costs, when people pay with credits on Robinhood Chain. The split is planned, and during the beta payouts are sent by hand.",
-      },
-      { term: "What you need", detail: "A GPU with 8 GB or more, a recent Chrome or Edge, and a wallet on Robinhood Chain." },
-    ],
-    href: "/lend#serve",
-    cta: "Start mining in your browser",
-  },
-  {
     Icon: Pickaxe,
     title: "Mine on Bittensor",
     status: "Outside the browser",
@@ -50,6 +28,28 @@ const lanes = [
     ],
     href: "/lend#mine-bittensor",
     cta: "See the Bittensor mining guide",
+  },
+  {
+    Icon: Gpu,
+    title: "Mine on Inferno",
+    status: "Live beta",
+    live: true,
+    where: "From any computer with a WebGPU browser, like a gaming PC. Nothing to install.",
+    facts: [
+      {
+        term: "What you do",
+        detail:
+          "Load a model in a browser tab and go online. Your GPU answers chats on Inferno's own network, for people who pick you by wallet address.",
+      },
+      {
+        term: "What you earn",
+        detail:
+          "70% of what each answer costs, when people pay with credits on Robinhood Chain. The split is planned, and during the beta payouts are sent by hand.",
+      },
+      { term: "What you need", detail: "A GPU with 8 GB or more, a recent Chrome or Edge, and a wallet on Robinhood Chain." },
+    ],
+    href: "/lend#serve",
+    cta: "Start mining in your browser",
   },
 ];
 
