@@ -99,7 +99,7 @@ export function DemoChat({ className }: { className?: string }) {
       </style>
       <div className="flex items-center justify-between gap-4 border-b border-line px-5 py-3.5">
         <span className="flex items-center gap-2 text-[15px] font-medium">
-          <LogoMark className="h-4 w-4" />
+          <LogoMark className="h-6 w-6" />
           Inferno chat
         </span>
         <span className="rounded-full border border-flame/60 px-2.5 py-0.5 text-[13px] font-semibold text-flame">Demo</span>

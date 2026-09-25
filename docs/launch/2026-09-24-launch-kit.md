@@ -128,4 +128,4 @@ The brief asked for "earn and get easy money". The kit says "earn for every toke
 
 ## Logo note
 
-The site uses an original dragon mark. To use other artwork, put the file at `public/brand/logo.png` and set `NEXT_PUBLIC_LOGO_SRC=/brand/logo.png` in `.env.local`, then rebuild. Artwork based on another company's character, including a redraw, needs that company's written permission for commercial use.
+The site uses the dragon artwork in `src/components/brand/logo.png`; the favicon, home-screen icon and share image are made from it (see the README, "Logo"). Artwork based on another company's character, including a redraw, needs that company's written permission for commercial use.

@@ -49,7 +49,7 @@ Copy `.env.example` to `.env.local`. Everything is optional.
 
 ## Logo
 
-The default mark is an original dragon drawn in SVG (`src/components/brand/Logo.tsx`, `src/app/icon.svg`, `src/app/opengraph-image.tsx`). To use other artwork you have the rights to, put it at `public/brand/logo.png`, set `NEXT_PUBLIC_LOGO_SRC=/brand/logo.png` in `.env.local`, and rebuild. Replace `src/app/icon.svg` with an `icon.png` for the favicon.
+The logo is the dragon artwork in `src/components/brand/logo.png`, a transparent PNG cut out of the designer's file. `Logo.tsx` shows it in the nav, footer, 404 page and demo chat, and `src/app/opengraph-image.tsx` puts it on the share image. The favicon (`src/app/icon.png`, 96 x 96, transparent) and home-screen icon (`src/app/apple-icon.png`, 180 x 180 on night `#0b0a10`) are sized copies of it. To change the logo, replace all three PNGs.
 
 ## Stack and design
 

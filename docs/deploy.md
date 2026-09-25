@@ -16,7 +16,6 @@ The `Dockerfile` in the repo root builds that server (`output: "standalone"`, wh
 | `NEXT_PUBLIC_SITE_URL` | Your public URL, such as `https://inferno.example` |
 | `NEXT_PUBLIC_RPC_URL` | A provider RPC URL for Robinhood Chain (see the checklist) |
 | `NEXT_PUBLIC_CHAIN` | Leave unset for mainnet (4663) |
-| `NEXT_PUBLIC_LOGO_SRC` | Optional, see the README |
 
 Leave a variable unset rather than empty: an empty `NEXT_PUBLIC_RPC_URL` replaces the default RPC with nothing.
 
