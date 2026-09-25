@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { USDG } from "@/lib/chain";
+import { site } from "@/lib/site";
 import { shortAddress } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
@@ -11,6 +12,7 @@ type Item = { label: string; href: string } | { label: string; copy: string };
 
 const items: Item[] = [
   { label: "Chat on Bittensor", href: "/chat?mode=bittensor" },
+  { label: `Copy the $${site.token.symbol} contract address`, copy: site.token.address },
   { label: "Mine on Bittensor", href: "/lend#mine-bittensor" },
   { label: "Chat", href: "/chat" },
   { label: "Mine with your GPU", href: "/lend" },

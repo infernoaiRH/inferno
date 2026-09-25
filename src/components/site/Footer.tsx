@@ -3,6 +3,8 @@ import { site } from "@/lib/site";
 import { BRIDGE_URL, DOCS_URL, EXPLORER_URL } from "@/lib/chain";
 import { Logo } from "@/components/brand/Logo";
 import { Tau } from "@/components/brand/Tau";
+import { XLogo } from "@/components/brand/XLogo";
+import { CopyCA } from "@/components/site/CopyCA";
 
 const columns: { title: string; links: { href: string; label: string; external?: boolean }[] }[] = [
   {
@@ -61,6 +63,18 @@ export function Footer() {
             <Tau className="text-heat-4" />
             Powered by Bittensor
           </Link>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-[14px]">
+            <a
+              href={site.x}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-10 items-center gap-2 rounded-full border border-line-bright px-3.5 text-hush transition-colors hover:text-mist sm:min-h-8"
+            >
+              <XLogo className="text-[13px]" />
+              {site.xHandle}
+            </a>
+            <CopyCA />
+          </div>
         </div>
         {columns.map((c) => (
           <div key={c.title}>

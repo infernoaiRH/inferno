@@ -9,6 +9,7 @@ import { site } from "@/lib/site";
 import { cn } from "@/lib/cn";
 import { Logo } from "@/components/brand/Logo";
 import { Tau } from "@/components/brand/Tau";
+import { XLogo } from "@/components/brand/XLogo";
 import { ConnectButton } from "@/components/wallet/ConnectButton";
 import { LivePulse } from "@/components/site/LivePulse";
 
@@ -85,9 +86,20 @@ export function Nav({ variant = "site" }: { variant?: "site" | "app" }) {
           </Link>
           {/* App pages stay network-quiet: no chain polling behind a private chat. */}
           {variant === "site" && <LivePulse className="hidden xl:flex" />}
+          <a
+            href={site.x}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`Inferno on X, ${site.xHandle}`}
+            title={site.xHandle}
+            className="flex h-10 w-10 items-center justify-center rounded-full text-hush transition-colors hover:text-mist"
+          >
+            <XLogo className="text-[17px]" />
+          </a>
+          {/* From xl only, so the X link fits the 1024 px row; ⌘K works everywhere. */}
           <button
             onClick={togglePalette}
-            className="hidden h-10 w-10 items-center justify-center rounded-full text-hush transition-colors hover:text-mist md:flex"
+            className="hidden h-10 w-10 items-center justify-center rounded-full text-hush transition-colors hover:text-mist xl:flex"
             aria-label="Open the command menu"
             title="Jump anywhere (⌘K or Ctrl+K)"
           >
