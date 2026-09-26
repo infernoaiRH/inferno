@@ -28,8 +28,12 @@ export const SIZES = {
 };
 export const LENDER_SHARE = 0.7;
 
-/** Real decoding rarely gets near peak bandwidth; 0.55 is the share we assume it does. */
-export const tokensPerSecond = (gbps: number, modelGB: number) => (gbps * 0.55) / modelGB;
+/**
+ * Real decoding rarely gets near a card's spec bandwidth; 0.55 of it is the share we assume. A figure
+ * from our test is already below spec (254 GB/s measured on an M5 Pro rated at 307), so it gets
+ * 0.65 instead: the same speed, without discounting twice.
+ */
+export const tokensPerSecond = (gbps: number, modelGB: number, tested = false) => (gbps * (tested ? 0.65 : 0.55)) / modelGB;
 
 /** A month is 30 days of `hoursADay`, of which `busy` (0 to 1) is spent serving. */
 export function earnings(tokPerSec: number, hoursADay: number, busy: number, creditsPer1k: number) {

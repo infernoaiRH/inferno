@@ -9,6 +9,12 @@ const near = (actual: number, expected: number) =>
 // Speed: bandwidth × 0.55 ÷ model size. 1,000 GB/s on a 5.5 GB model is 100 tokens a second.
 near(tokensPerSecond(1000, 5.5), 100);
 
+// A tested figure is already below spec, so it gets 0.65, not 0.55 again: 254 GB/s measured on an M5 Pro
+// (307 GB/s spec) on the 8B class is 254 × 0.65 ÷ 4.7, close to the spec figure's 307 × 0.55 ÷ 4.7.
+near(tokensPerSecond(254, MODELS[1].gb, true), (254 * 0.65) / 4.7);
+const [tested, spec] = [tokensPerSecond(254, 4.7, true), tokensPerSecond(307, 4.7)];
+assert.ok(Math.abs(tested - spec) / spec < 0.05, `${tested} should be within 5% of ${spec}`);
+
 // An RTX 4090 on the 8B class: 1008 × 0.55 ÷ 4.7.
 const [rtx4090] = REFERENCE_GPUS;
 assert.equal(rtx4090.id, "rtx-4090");

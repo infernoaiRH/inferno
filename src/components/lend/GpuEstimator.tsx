@@ -46,10 +46,11 @@ export function GpuEstimator() {
 
   const sources: Source[] = mine ? [{ id: "mine", name: "Your GPU, tested here", gbps: mine.gbps }, ...REFERENCE_GPUS] : REFERENCE_GPUS;
   const source = sources.find((s) => s.id === pick) ?? sources[0];
-  const who = source.id === "mine" ? "your GPU" : `the ${source.name}`;
+  const tested = source.id === "mine";
+  const who = tested ? "your GPU" : `the ${source.name}`;
   const tooBig = (gb: number) => source.memGB !== undefined && gb > source.memGB;
   const served = tooBig(SIZES.large.model.gb) ? SIZES.small : SIZES[want];
-  const tps = tokensPerSecond(source.gbps, served.model.gb);
+  const tps = tokensPerSecond(source.gbps, served.model.gb, tested);
   const e = earnings(tps, hours, busy / 100, served.credits);
 
   const running = run.state === "running";
@@ -191,7 +192,7 @@ export function GpuEstimator() {
                       {tooBig(m.gb) ? (
                         <span className="text-hush">Won&apos;t fit in {source.memGB} GB</span>
                       ) : (
-                        `About ${speed(tokensPerSecond(source.gbps, m.gb))}`
+                        `About ${speed(tokensPerSecond(source.gbps, m.gb, tested))}`
                       )}
                     </td>
                   </tr>
@@ -199,7 +200,9 @@ export function GpuEstimator() {
               </tbody>
             </table>
             <p className="mt-4 text-[15px] text-hush">
-              Speed is bandwidth × 0.55 ÷ model size, because answering never quite reaches a card&apos;s full bandwidth.
+              {tested
+                ? "Speed is your tested bandwidth × 0.65 ÷ model size. Answering never reaches a card's spec bandwidth, and a tested figure is already below spec, so it takes off less than the 0.55 used for cards from the list."
+                : "Speed is bandwidth × 0.55 ÷ model size, because answering never quite reaches a card's spec bandwidth."}
               {source.memGB === undefined && " Browsers don't report GPU memory, so check your card has room for the model."}
             </p>
           </div>
