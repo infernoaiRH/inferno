@@ -323,7 +323,13 @@ export async function catchUp(db: Db, client: PublicClient, o: IndexOptions, now
   return claimed.length ? indexTransfers(db, client, o, now + BUDGET_MS) : null;
 }
 
-// ---- The Inferno coin's price ----------------------------------------------------------------
+// ---- Live prices: the Inferno coin and TAO ---------------------------------------------------
+
+/** Micro-USD from a Chainlink USD answer with `decimals`, rounded down. */
+export const feedMicro = (answer: bigint, decimals: number): number => Number((answer * 1_000_000n) / 10n ** BigInt(decimals));
+
+/** What a deposit credits at a market price: 10% less, rounded down, for the price moving and the token's own risks. */
+export const afterHaircut = (microUsd: number): number => Math.floor((microUsd * 9) / 10);
 
 /**
  * Micro-USD per whole coin, rounded down, from its Uniswap v4 pool's sqrtPriceX96 and an ETH/USD
@@ -355,7 +361,7 @@ export async function coinDepositPrice(db: Db, now = Date.now()): Promise<number
     [now - 30 * MINUTE_MS, now],
   );
   if (w.low === null || w.first! > now - 20 * MINUTE_MS || w.last! < now - 10 * MINUTE_MS) return 0;
-  return Math.floor((w.low * 9) / 10);
+  return afterHaircut(w.low);
 }
 
 // ---- Charges, holds and network usage ---------------------------------------------------------

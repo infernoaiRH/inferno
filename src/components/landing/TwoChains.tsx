@@ -44,24 +44,30 @@ export function TwoChains() {
           </span>
           <h3 className="mt-6 text-2xl sm:text-3xl">Robinhood Chain moves the money.</h3>
           <p className="mt-3 max-w-[52ch] text-hush">
-            Send USDG or $INFERNOAI, the Inferno coin, from your wallet to Inferno&apos;s treasury. It becomes credits
-            once Ethereum finalizes the transfer, about 15 to 20 minutes after you send it.
+            Send USDG, $INFERNOAI or TAO from your wallet to Inferno&apos;s treasury. It becomes credits once Ethereum
+            finalizes the transfer, about 15 to 20 minutes after you send it.
           </p>
           <ul aria-label="What you can pay with" className="mt-6 flex flex-wrap gap-2 text-sm">
-            {["USDG", "$INFERNOAI"].map((coin) => (
+            {["USDG", "$INFERNOAI", "TAO via Chainlink CCIP"].map((coin) => (
               <li key={coin} className={cn("rounded-full border px-3 py-1", credits ? "border-mint/50" : "border-line-bright")}>
                 <span className="font-semibold text-mist">{coin}</span>{" "}
                 <span className={cn("text-xs", credits ? "text-mint" : "text-hush")}>{status}</span>
               </li>
             ))}
-            <li className="rounded-full border border-dashed border-line-bright px-3 py-1 text-hush">
-              TAO via Chainlink CCIP: soon
-            </li>
           </ul>
           <p className="mt-6 max-w-[52ch] text-[15px] text-hush">
             One USDG buys $1 of credit. $INFERNOAI counts at its live price: the lowest of the last 30 minutes on its
-            Uniswap pool on Robinhood Chain, less 10%, checked every 5 minutes. Lenders are paid in USDG, by hand during
-            the beta.
+            Uniswap pool on Robinhood Chain, less 10%, checked every 5 minutes. TAO counts at Chainlink&apos;s TAO/USD
+            price, less 10%. First,{" "}
+            <a
+              href="https://forevermoney.ai/bridge?type=bridge&from=finney&to=robinhood"
+              target="_blank"
+              rel="noreferrer"
+              className="text-flame underline decoration-flame/40 underline-offset-4 hover:decoration-flame"
+            >
+              bridge TAO over Chainlink CCIP
+            </a>{" "}
+            to Robinhood Chain. Lenders are paid in USDG, by hand during the beta.
           </p>
           <div className="mt-auto pt-8">
             <ButtonLink href="/credits" variant="quiet">

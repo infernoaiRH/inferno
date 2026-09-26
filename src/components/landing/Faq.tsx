@@ -12,7 +12,7 @@ const faqs = [
   },
   {
     q: "Can I pay with TAO?",
-    a: "Not yet, soon. TAO reaches Robinhood Chain through Chainlink's CCIP bridge, and that's how you'll pay with it. For now, if you use your own Chutes key, Chutes takes TAO directly.",
+    a: "Yes. Bridge it to Robinhood Chain over Chainlink CCIP, on ForeverMoney's bridge, then send it to Inferno's treasury. It's credited at Chainlink's TAO/USD price, less 10%. If you use your own Chutes key, Chutes takes TAO directly.",
   },
   {
     q: "Is Inferno part of Robinhood?",

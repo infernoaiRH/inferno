@@ -5,7 +5,7 @@ import { ConnectionStatus, NetworkStats, RecentBlocks } from "@/components/netwo
 export const metadata: Metadata = { title: "Network", alternates: { canonical: "/network" } };
 
 const ours = [
-  { name: "Credits", status: "Live. Bought with USDG or $INFERNOAI transfers to the treasury, counted once the chain finalizes them." },
+  { name: "Credits", status: "Live. Bought with USDG, $INFERNOAI or TAO transfers to the treasury, counted once the chain finalizes them." },
   { name: "Lender payouts", status: "Sent by hand in USDG during the beta." },
   { name: "Inference relay", status: "Live. It routes sealed requests to lenders and can't read them." },
   { name: "Sealed messages", status: "Demo. Nothing leaves your browser yet." },
@@ -41,7 +41,7 @@ export default function NetworkPage() {
           Inferno on Robinhood Chain
         </h2>
         <p className="mt-3 max-w-[60ch] text-hush">
-          Inferno has no contracts of its own. Money moves as plain token transfers (USDG or $INFERNOAI), so every payment is on the explorer.
+          Inferno has no contracts of its own. Money moves as plain token transfers (USDG, $INFERNOAI or TAO), so every payment is on the explorer.
         </p>
         <ul className="mt-8 border-b border-line">
           {ours.map((s) => (

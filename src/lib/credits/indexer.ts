@@ -1,5 +1,5 @@
 import { CHAIN, serverClient } from "@/lib/chain";
-import { COIN_TOKEN, readCoinPrice } from "./coin";
+import { COIN_TOKEN, readCoinPrice } from "./prices";
 import { acceptedTokens, creditsConfig, ledgerDb } from "./config";
 import { catchUp, recordCoinPrice, sweepHolds } from "./ledger";
 

@@ -21,7 +21,7 @@ const steps = [
   {
     Icon: Blocks,
     title: "The chain pays",
-    body: "Payment per token, in USDG or $INFERNOAI, settles on Robinhood Chain. The lender keeps 70% (planned).",
+    body: "Payment per token, in USDG, $INFERNOAI or TAO, settles on Robinhood Chain. The lender keeps 70% (planned).",
     node: "2.45s",
   },
 ];

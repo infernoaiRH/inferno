@@ -93,11 +93,11 @@ const TIES = [
     term: "TAO on Robinhood Chain",
     detail: (
       <>
-        TAO reaches Robinhood Chain through Chainlink&apos;s CCIP bridge, so Inferno can take it for{" "}
+        TAO reaches Robinhood Chain through Chainlink&apos;s CCIP bridge, and Inferno takes it for{" "}
         <Link href="/credits" className={link}>
           credits
         </Link>{" "}
-        soon.
+        at Chainlink&apos;s TAO/USD price, less 10%.
       </>
     ),
   },

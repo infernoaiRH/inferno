@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Status",
   description:
-    "Is Inferno live? Checks of the site, Robinhood Chain mainnet, Bittensor subnet 64, credits, the $INFERNOAI price and contract, run on the server when the page loads.",
+    "Is Inferno live? Checks of the site, Robinhood Chain mainnet, Bittensor subnet 64, credits, the $INFERNOAI and TAO prices and the $INFERNOAI contract, run on the server when the page loads.",
   alternates: { canonical: "/status" },
 };
 
@@ -43,8 +43,27 @@ export default async function StatusPage() {
   const block = s.chain.latestBlock;
   const models = s.bittensor.sealedModels;
   const lenders = s.network?.lendersOnline ?? null;
-  const coin = s.token.creditUsd;
-  const paidIn = (s.payments.tokens ?? []).map((t) => (t === s.token.symbol ? `$${t}` : t)).join(" or ");
+  const paid = (s.payments.tokens ?? []).map((t) => (t.symbol === s.token.symbol ? `$${t.symbol}` : t.symbol));
+  const paidIn = paid.length > 1 ? `${paid.slice(0, -1).join(", ")} or ${paid.at(-1)}` : paid[0];
+  /** A live-priced token's row: what one buys in credits now, and how that's worked out. */
+  const priced = (symbol: string, name: string, unit: string, rule: string, waiting: string) => {
+    const t = s.payments.tokens?.find((x) => x.symbol === symbol);
+    const usd = t?.creditUsd ?? null;
+    return {
+      label: `${name} for credits`,
+      value:
+        usd === null ? (
+          t ? waiting : "Not taken right now"
+        ) : (
+          <span>
+            <span className="tnum text-mist">{formatUsd(usd, Math.max(2, 2 - Math.floor(Math.log10(usd))))}</span> of credit a {unit}: {rule}
+          </span>
+        ),
+      live: usd !== null,
+      href: "/credits",
+      go: "Credits",
+    };
+  };
   const rows: { label: string; value: ReactNode; live: boolean; href?: string; go?: string }[] = [
     { label: "Website", value: "Up", live: true },
     {
@@ -75,21 +94,8 @@ export default async function StatusPage() {
       href: "/network",
       go: "Network",
     },
-    {
-      label: `$${s.token.symbol} for credits`,
-      value:
-        coin === null ? (
-          s.payments.tokens?.includes(s.token.symbol) ? "Price not ready yet; coins sent now wait for it" : "Not taken right now"
-        ) : (
-          <span>
-            <span className="tnum text-mist">{formatUsd(coin, Math.max(2, 2 - Math.floor(Math.log10(coin))))}</span> of credit a coin: the lowest price
-            of the last 30 minutes on its pool, less 10%
-          </span>
-        ),
-      live: coin !== null,
-      href: "/credits",
-      go: "Credits",
-    },
+    priced(s.token.symbol, `$${s.token.symbol}`, "coin", "the lowest price of the last 30 minutes on its pool, less 10%", "Price not ready yet; coins sent now wait for it"),
+    priced("TAO", "TAO", "TAO", "Chainlink's TAO/USD price, less 10%", "Price not ready yet; TAO sent now waits for it"),
     {
       label: `$${s.token.symbol} contract`,
       value: <span className="font-mono text-[14px] break-all">{s.token.address}</span>,

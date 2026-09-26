@@ -37,7 +37,8 @@ export async function getStatus() {
       models: models?.map((m) => m.name) ?? null,
       creditsOn: payments === true && Boolean(process.env.CHUTES_API_KEY),
     },
-    payments: { enabled: payments, tokens: config?.enabled ? config.tokens.map((t) => t.symbol) : null },
+    // What one whole token buys in credits now; creditUsd is null while a live price isn't ready.
+    payments: { enabled: payments, tokens: config?.enabled ? config.tokens.map((t) => ({ symbol: t.symbol, creditUsd: t.usdPrice })) : null },
     network: relay,
     // The token lives on mainnet whichever chain this build reads.
     token: {
@@ -45,9 +46,6 @@ export async function getStatus() {
       address: site.token.address,
       chainId: robinhood.id,
       explorer: `${robinhood.blockExplorers.default.url}/token/${site.token.address}`,
-      // Dollars one coin buys in credits now: the lowest price of the last 30 minutes on its pool, less 10%.
-      // Null while that price isn't ready, or credits are off.
-      creditUsd: config?.tokens.find((t) => t.live)?.usdPrice ?? null,
     },
   };
 }

@@ -46,7 +46,7 @@ export function Pricing() {
             Network models charge for the tokens they read and write, and nothing else. No subscription, no minimum.
           </p>
           <p className="mt-4 max-w-[52ch] text-lg text-hush">
-            Pay with Inferno credits: send USDG or $INFERNOAI on Robinhood Chain and your balance shows up once the chain
+            Pay with Inferno credits: send USDG, $INFERNOAI or TAO on Robinhood Chain and your balance shows up once the chain
             finalizes it, in about 16 minutes. It doesn&apos;t expire.
           </p>
           <p className="mt-8 max-w-[52ch] border-l-2 border-flame pl-4 text-[15px] text-mist">

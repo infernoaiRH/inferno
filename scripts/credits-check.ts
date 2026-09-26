@@ -260,6 +260,9 @@ assert.equal(await L.lastBlock(idb, USDG.address), 9_000);
 
 // The Inferno coin's price. Pool maths on mainnet numbers read on 2026-09-27: about 10.1M coins per ETH, ETH at $2,691.30.
 assert.equal(L.coinPriceMicro(251_755_437_815_578_711_090_682_395_855_769n, 269_130_180_413n, 8), 266);
+// TAO: Chainlink's TAO/USD answer (8 decimals; $324.32514 on Arbitrum on 2026-09-27), less 10%.
+assert.equal(L.feedMicro(32_432_514_000n, 8), 324_325_140);
+assert.equal(L.afterHaircut(L.feedMicro(32_432_514_000n, 8)), 291_892_626);
 // Deposits credit at the lowest sample of the last 30 minutes, less 10%, and only while the samples cover that window.
 const pdb = await ledger();
 const MIN = 60_000;

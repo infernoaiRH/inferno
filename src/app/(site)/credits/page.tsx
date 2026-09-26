@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { ExternalLink } from "lucide-react";
 import { CopyButton, CreditsAccount } from "@/components/credits/CreditsAccount";
 import { buttonClass } from "@/components/ui/Button";
@@ -6,18 +7,22 @@ import { CHAIN, explorerAddress } from "@/lib/chain";
 import { cn } from "@/lib/cn";
 import { publicConfig } from "@/lib/credits/config";
 import { formatUsd, shortAddress } from "@/lib/format";
+import { site } from "@/lib/site";
 
 // Reads the server's payment settings on every request, not at build time.
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Credits",
-  description: "Top up Inferno credits by sending USDG or $INFERNOAI from your wallet to the treasury on Robinhood Chain. Credits pay for AI answers.",
+  description: "Top up Inferno credits by sending USDG, $INFERNOAI or TAO from your wallet to the treasury on Robinhood Chain. Credits pay for AI answers.",
   alternates: { canonical: "/credits" },
 };
 
 const wrap = "mx-auto max-w-7xl px-5 sm:px-8";
 const split = "grid gap-x-16 gap-y-10 py-16 sm:py-24 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]";
+const link = "text-flame underline decoration-flame/40 underline-offset-4 hover:decoration-flame";
+/** ForeverMoney's bridge: TAO from Bittensor to Robinhood Chain over Chainlink CCIP. */
+const TAO_BRIDGE = "https://forevermoney.ai/bridge?type=bridge&from=finney&to=robinhood";
 
 function Rules({ rows }: { rows: { term: string; detail: string }[] }) {
   return (
@@ -39,7 +44,35 @@ function tinyDigits(usd: number): number {
 
 export default async function CreditsPage() {
   const cfg = await publicConfig();
-  const sym = (t: (typeof cfg.tokens)[number]) => (t.live ? `$${t.symbol}` : t.symbol);
+  const sym = (t: (typeof cfg.tokens)[number]) => (t.symbol === site.token.symbol ? `$${t.symbol}` : t.symbol);
+  const final = " Your transfer is credited at the price when it's final, about 15–20 minutes after you send it.";
+  const bridge = (
+    <a className={link} href={TAO_BRIDGE} target="_blank" rel="noreferrer">
+      ForeverMoney&apos;s bridge
+    </a>
+  );
+  /** How a token's price is worked out, or, for a live one without a price yet, why its transfers wait. */
+  const explain = (t: (typeof cfg.tokens)[number]): ReactNode => {
+    const priced = t.usdPrice !== null;
+    if (t.symbol === "USDG") return "One USDG is one dollar of credit.";
+    if (t.live && t.symbol === "TAO")
+      return priced ? (
+        <>
+          That&apos;s Chainlink&apos;s TAO/USD price, less 10%, read from its feed on Arbitrum since Robinhood Chain has none. Only TAO
+          bridged over Chainlink CCIP counts; {bridge} brings it over from Bittensor.{final}
+        </>
+      ) : (
+        <>
+          Chainlink&apos;s TAO/USD feed is stale or out of reach. TAO sent now isn&apos;t lost: it waits, and is credited once there&apos;s
+          a price. Only TAO bridged over Chainlink CCIP counts ({bridge}).
+        </>
+      );
+    if (t.live)
+      return priced
+        ? `That's the lowest price of the last 30 minutes on its Uniswap pool on Robinhood Chain, less 10%, checked every 5 minutes: nobody sets it by hand, and a quick pump can't be cashed in.${final}`
+        : "It needs 20 minutes of pool checks first, and pauses while the pool is too thin or a check is late. Coins sent now aren't lost: they wait, and are credited once there's a price.";
+    return "We set this price by hand and update it; your transfer is credited at the price shown here when it's final.";
+  };
   const symbols = cfg.tokens.map(sym);
   const sendable = symbols.length > 1 ? `${symbols.slice(0, -1).join(", ")} or ${symbols.at(-1)}` : (symbols[0] ?? "tokens");
   const cap = cfg.maxCreditUsd === null ? "" : formatUsd(cfg.maxCreditUsd, cfg.maxCreditUsd % 1 ? 2 : 0);
@@ -141,32 +174,19 @@ export default async function CreditsPage() {
                     </dt>
                     <dd className="text-hush">
                       {t.usdPrice === null ? (
-                        <>
-                          <span className="text-mist">No live price right now.</span> It needs 20 minutes of pool checks
-                          first, and pauses while the pool is too thin or a check is late. Coins sent now aren&apos;t
-                          lost: they wait, and are credited once there&apos;s a price.
-                        </>
+                        <span className="text-mist">No live price right now. </span>
                       ) : (
                         <>
                           <span className="tnum text-mist">
                             {formatUsd(t.usdPrice, t.live ? tinyDigits(t.usdPrice) : t.usdPrice < 1 ? 6 : 2)} per {sym(t)}
                           </span>
-                          {t.live
-                            ? ". That's the lowest price of the last 30 minutes on its Uniswap pool on Robinhood Chain, less 10%, checked every 5 minutes: nobody sets it by hand, and a quick pump can't be cashed in. Your transfer is credited at the price when it's final, about 15–20 minutes after you send it."
-                            : t.symbol === "USDG"
-                              ? ". One USDG is one dollar of credit."
-                              : ". We set this price by hand and update it; your transfer is credited at the price shown here when it's final."}
+                          .{" "}
                         </>
                       )}
+                      {explain(t)}
                     </dd>
                   </div>
                 ))}
-                {!cfg.tokens.some((t) => t.symbol === "TAO") && (
-                  <div className="grid gap-x-8 gap-y-1 border-t border-line py-5 sm:grid-cols-[13rem_minmax(0,1fr)]">
-                    <dt className="text-xl text-mist">TAO</dt>
-                    <dd className="text-hush">Coming soon, through Chainlink CCIP. Don&apos;t send TAO yet.</dd>
-                  </div>
-                )}
                 <div className="grid gap-x-8 gap-y-1 border-t border-line py-5 sm:grid-cols-[13rem_minmax(0,1fr)]">
                   <dt className="text-xl text-mist">ETH</dt>
                   <dd className="text-hush">
