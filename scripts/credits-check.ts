@@ -258,6 +258,49 @@ assert.equal(await L.lastBlock(idb, USDG.address), 5_000);
 assert.equal(await L.catchUp(idb, rpc(9_000n, 5_000n), io, Date.now() + 10_000), 0, "then the next run resumes");
 assert.equal(await L.lastBlock(idb, USDG.address), 9_000);
 
+// The Inferno coin's price. Pool maths on mainnet numbers read on 2026-09-27: about 10.1M coins per ETH, ETH at $2,691.30.
+assert.equal(L.coinPriceMicro(251_755_437_815_578_711_090_682_395_855_769n, 269_130_180_413n, 8), 266);
+// Deposits credit at the lowest sample of the last 30 minutes, less 10%, and only while the samples cover that window.
+const pdb = await ledger();
+const MIN = 60_000;
+const p0 = 1_000_000 * MIN;
+assert.equal(await L.coinDepositPrice(pdb, p0), 0, "no samples, no price");
+await L.recordCoinPrice(pdb, 300, p0);
+assert.equal(await L.coinDepositPrice(pdb, p0), 0, "one fresh sample doesn't cover the window");
+for (const [m, micro] of [[5, 280], [10, 1_000], [15, 290], [20, 310]]) await L.recordCoinPrice(pdb, micro, p0 + m * MIN);
+assert.equal(await L.coinDepositPrice(pdb, p0 + 20 * MIN), 252, "the lowest, 280, less 10%: the pump to 1,000 doesn't count");
+assert.equal(await L.coinDepositPrice(pdb, p0 + 30 * MIN), 252, "the first sample has left the window; it's still covered");
+assert.equal(await L.coinDepositPrice(pdb, p0 + 31 * MIN), 0, "the newest is 11 minutes old: the sampler stopped, so deposits wait");
+await L.recordCoinPrice(pdb, 400, p0 + 32 * MIN);
+assert.equal(await L.coinDepositPrice(pdb, p0 + 36 * MIN), 261, "280 is out of the window now: 290 less 10%");
+await L.recordCoinPrice(pdb, 500, p0 + 24 * 60 * MIN + 1);
+assert.equal((await pdb.query<{ n: number }>("SELECT COUNT(*) AS n FROM coin_prices"))[0].n, 6, "a day-old sample is dropped");
+// Without a price the coin is skipped: its deposits wait, from where it first appeared, and are credited once it has one.
+const COIN = { address: "0x81d31D40Aca12F671d3A4Db44516d84121463CF3" as Address, symbol: "INFERNOAI", decimals: 18, priceMicro: 0 };
+const coinLog = { address: COIN.address, blockNumber: 1_500n, transactionHash: tx(200), logIndex: 0, args: { from: dave, to: treasury7, value: 10n ** 21n } };
+const coinRpc = (finalized: bigint) => ({
+  getBlock: async () => ({ number: finalized }),
+  getLogs: async ({ fromBlock, toBlock }: { fromBlock: bigint; toBlock: bigint }) => [coinLog].filter((l) => l.blockNumber >= fromBlock && l.blockNumber <= toBlock),
+}) as unknown as PublicClient;
+const cdb = await ledger();
+const co = { treasury: treasury7, tokens: [COIN], ...caps, startBlock: 1_000n };
+assert.equal(await L.indexTransfers(cdb, coinRpc(2_000n), co), 0, "no price: nothing credited");
+assert.equal(await L.lastBlock(cdb, COIN.address), 999, "but it waits from the start block");
+assert.equal(await L.indexTransfers(cdb, coinRpc(3_000n), co), 0);
+assert.equal(await L.lastBlock(cdb, COIN.address), 999, "and keeps waiting");
+assert.equal(await L.indexTransfers(cdb, coinRpc(3_000n), { ...co, tokens: [{ ...COIN, priceMicro: 252 }] }), 1);
+assert.equal(await L.balance(cdb, dave), 252_000, "1,000 coins at 252 micro-USD each");
+// A token added to a ledger that already has cursors counts from then on, not from the start block.
+assert.equal(await L.indexTransfers(idb, coinRpc(9_500n), { ...io, tokens: [USDG, { ...COIN, priceMicro: 252 }] }), 0);
+assert.equal(await L.lastBlock(idb, COIN.address), 9_500, "the coin's transfer at block 1,500, before it was accepted, isn't a top-up");
+const waiting = { txHash: tx(201), logIndex: 0, block: 1, from: dave, amount: 1n };
+await assert.rejects(L.creditTransfers(cdb, COIN, [waiting], caps, 1), /no price/, "a deposit is never recorded at no price");
+// A ledger made before the price table gets it when it opens, without INFERNO_DB_INIT.
+const older = await ledger();
+await older.query("DROP TABLE coin_prices");
+assert.equal(await L.initLedger(older, { NODE_ENV: "production" }), null);
+assert.equal(await L.coinDepositPrice(older), 0, "the price table is back");
+
 // Nonces: single use, 10 minutes.
 await L.issueNonce(db, "n1", NONCE_TTL_MS, 1_000);
 assert.equal(await L.burnNonce(db, "n1", 2_000), true);
@@ -321,7 +364,7 @@ assert.equal(await cronCall(`Bearer ${"t".repeat(32)}`), 401, "wrong secret");
 assert.equal(await cronCall(`Bearer ${"s".repeat(31)}`), 401, "a prefix of it");
 assert.equal(await cronCall("s".repeat(32)), 401, "not as a bearer token");
 
-console.log(`credits-check: ledger, holds, caps, indexer, cron, cookie and SIWE checks passed (${server ? "Postgres at DATABASE_URL" : "PGlite"})`);
+console.log(`credits-check: ledger, holds, caps, indexer, coin price, cron, cookie and SIWE checks passed (${server ? "Postgres at DATABASE_URL" : "PGlite"})`);
 
 // Fork test: a real USDG transfer on a mainnet fork, one indexer pass, the sender is credited.
 const fork = process.env.CREDITS_FORK_RPC;

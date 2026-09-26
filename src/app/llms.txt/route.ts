@@ -9,7 +9,8 @@ export async function GET() {
   const u = (path: string) => `${site.url}${path}`;
   const live = [
     s.bittensor.sealedModels !== null && `${s.bittensor.sealedModels} sealed models live on Bittensor subnet 64`,
-    s.payments.enabled !== null && (s.payments.enabled ? "credits on, paid in USDG" : "credits off"),
+    s.payments.enabled !== null && (s.payments.enabled ? `credits on, paid in ${(s.payments.tokens ?? ["USDG"]).join(" or ")}` : "credits off"),
+    s.token.creditUsd !== null && `one $${s.token.symbol} buys $${s.token.creditUsd} of credit right now`,
     s.chain.latestBlock !== null && `${s.chain.name} at block ${s.chain.latestBlock}`,
     s.network && `${s.network.lendersOnline} lent GPUs online`,
   ]
@@ -33,7 +34,7 @@ Live status, checked ${s.checkedAt}: ${live || "checks unavailable right now"}. 
 - [Chat](${u("/chat")}): open models on Bittensor subnet 64 (Chutes) inside confidential-compute hardware, on GPUs people lend, or on your own GPU in the browser with WebGPU (private mode: nothing leaves the device).
 - [Mine](${u("/lend")}): mine Bittensor subnet 64 with data-center GPUs, or serve answers from a browser tab (beta).
 - [Messages](${u("/messages")}): end-to-end sealed messages between wallets (X25519, HKDF, XChaCha20-Poly1305).
-- [Credits](${u("/credits")}): pay per answer with USDG sent to the treasury on Robinhood Chain.
+- [Credits](${u("/credits")}): pay per answer with USDG or $${site.token.symbol} sent to the treasury on Robinhood Chain. $${site.token.symbol} counts at its live price: the lowest of the last 30 minutes on its Uniswap v4 pool, checked every 5 minutes, less 10%. TAO through Chainlink CCIP: soon.
 - [Network](${u("/network")}): live Robinhood Chain data and the lenders online.
 
 ## Notes

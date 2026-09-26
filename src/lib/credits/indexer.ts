@@ -1,6 +1,7 @@
 import { CHAIN, serverClient } from "@/lib/chain";
+import { COIN_TOKEN, readCoinPrice } from "./coin";
 import { acceptedTokens, creditsConfig, ledgerDb } from "./config";
-import { catchUp, sweepHolds } from "./ledger";
+import { catchUp, recordCoinPrice, sweepHolds } from "./ledger";
 
 const why = (e: unknown) => (e as { shortMessage?: string }).shortMessage ?? (e instanceof Error ? e.message : String(e));
 
@@ -51,4 +52,21 @@ export async function upkeep(): Promise<{ swept: number; credited: number | null
     console.error("[credits] Upkeep failed; the next read or cron run tries again:", why(e));
   }
   return done;
+}
+
+/**
+ * Records a sample of $INFERNOAI's price for coin deposits. Only the cron calls it, every 5 minutes,
+ * so samples are evenly spread over the window deposits are priced from. Payments must be on. Never
+ * throws: returns the sample in micro-USD, or null when there was no price to trust (logged).
+ */
+export async function sampleCoin(): Promise<number | null> {
+  if (!COIN_TOKEN) return null;
+  try {
+    const micro = await readCoinPrice();
+    await recordCoinPrice((await ledgerDb())!, micro);
+    return micro;
+  } catch (e) {
+    console.error("[credits] No coin price sample this time:", why(e));
+    return null;
+  }
 }

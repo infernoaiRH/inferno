@@ -1,6 +1,7 @@
 import { robinhood } from "viem/chains";
 import { chutesModels } from "@/lib/bittensor/chutes";
 import { paymentsEnabled } from "@/lib/credits";
+import { publicConfig } from "@/lib/credits/config";
 import { relayStore } from "@/lib/relay/server";
 import { CHAIN, EXPLORER_URL, serverClient } from "@/lib/chain";
 import { site } from "@/lib/site";
@@ -11,9 +12,10 @@ import { site } from "@/lib/site";
  */
 export async function getStatus() {
   const store = relayStore();
-  const [models, payments, block, relay] = await Promise.all([
+  const [models, payments, config, block, relay] = await Promise.all([
     chutesModels().catch(() => null),
     paymentsEnabled().catch(() => null),
+    publicConfig().catch(() => null),
     serverClient.getBlockNumber().catch(() => null),
     store instanceof Response
       ? null
@@ -35,7 +37,7 @@ export async function getStatus() {
       models: models?.map((m) => m.name) ?? null,
       creditsOn: payments === true && Boolean(process.env.CHUTES_API_KEY),
     },
-    payments: { enabled: payments, token: "USDG" },
+    payments: { enabled: payments, tokens: config?.enabled ? config.tokens.map((t) => t.symbol) : null },
     network: relay,
     // The token lives on mainnet whichever chain this build reads.
     token: {
@@ -43,6 +45,9 @@ export async function getStatus() {
       address: site.token.address,
       chainId: robinhood.id,
       explorer: `${robinhood.blockExplorers.default.url}/token/${site.token.address}`,
+      // Dollars one coin buys in credits now: the lowest price of the last 30 minutes on its pool, less 10%.
+      // Null while that price isn't ready, or credits are off.
+      creditUsd: config?.tokens.find((t) => t.live)?.usdPrice ?? null,
     },
   };
 }

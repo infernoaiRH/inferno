@@ -30,8 +30,8 @@ export function BittensorSection() {
       live: credits,
       detail: (
         <>
-          Send USDG from your wallet to Inferno on Robinhood Chain, or TAO once the operator switches it on. Each answer
-          costs Chutes&apos; price plus {Math.round(BITTENSOR_MARGIN * 100)}%, our planned margin. The{" "}
+          Send USDG or $INFERNOAI from your wallet to Inferno on Robinhood Chain; TAO through Chainlink CCIP is coming
+          soon. Each answer costs Chutes&apos; price plus {Math.round(BITTENSOR_MARGIN * 100)}%, our planned margin. The{" "}
           <Link href="/credits" className={link}>
             credits page
           </Link>{" "}

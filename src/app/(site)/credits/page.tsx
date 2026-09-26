@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Credits",
-  description: "Top up Inferno credits by sending USDG from your wallet to the treasury on Robinhood Chain. Credits pay for AI answers.",
+  description: "Top up Inferno credits by sending USDG or $INFERNOAI from your wallet to the treasury on Robinhood Chain. Credits pay for AI answers.",
   alternates: { canonical: "/credits" },
 };
 
@@ -32,9 +32,15 @@ function Rules({ rows }: { rows: { term: string; detail: string }[] }) {
   );
 }
 
+/** Decimal places that keep a sub-$1 price to ~3 significant digits, e.g. $0.000239 or $0.0000239. */
+function tinyDigits(usd: number): number {
+  return usd > 0 && usd < 1 ? 2 - Math.floor(Math.log10(usd)) : 2;
+}
+
 export default async function CreditsPage() {
   const cfg = await publicConfig();
-  const symbols = cfg.tokens.map((t) => t.symbol);
+  const sym = (t: (typeof cfg.tokens)[number]) => (t.live ? `$${t.symbol}` : t.symbol);
+  const symbols = cfg.tokens.map(sym);
   const sendable = symbols.length > 1 ? `${symbols.slice(0, -1).join(", ")} or ${symbols.at(-1)}` : (symbols[0] ?? "tokens");
   const cap = cfg.maxCreditUsd === null ? "" : formatUsd(cfg.maxCreditUsd, cfg.maxCreditUsd % 1 ? 2 : 0);
 
@@ -121,7 +127,7 @@ export default async function CreditsPage() {
                 {cfg.tokens.map((t) => (
                   <div key={t.address} className="grid gap-x-8 gap-y-1 border-t border-line py-5 sm:grid-cols-[13rem_minmax(0,1fr)]">
                     <dt>
-                      <span className="text-xl text-mist">{t.symbol}</span>
+                      <span className="text-xl text-mist">{sym(t)}</span>
                       <a
                         className="tnum mt-1 flex items-center gap-1.5 text-[13px] text-faint hover:text-mist"
                         href={explorerAddress(t.address)}
@@ -134,15 +140,33 @@ export default async function CreditsPage() {
                       </a>
                     </dt>
                     <dd className="text-hush">
-                      <span className="tnum text-mist">
-                        {formatUsd(t.usdPrice, t.usdPrice < 1 ? 6 : 2)} per {t.symbol}
-                      </span>
-                      {t.symbol === "USDG"
-                        ? ". One USDG is one dollar of credit."
-                        : ". We set this price by hand and update it; your transfer is credited at the price shown here when it's final."}
+                      {t.usdPrice === null ? (
+                        <>
+                          <span className="text-mist">No live price right now.</span> It needs 20 minutes of pool checks
+                          first, and pauses while the pool is too thin or a check is late. Coins sent now aren&apos;t
+                          lost: they wait, and are credited once there&apos;s a price.
+                        </>
+                      ) : (
+                        <>
+                          <span className="tnum text-mist">
+                            {formatUsd(t.usdPrice, t.live ? tinyDigits(t.usdPrice) : t.usdPrice < 1 ? 6 : 2)} per {sym(t)}
+                          </span>
+                          {t.live
+                            ? ". That's the lowest price of the last 30 minutes on its Uniswap pool on Robinhood Chain, less 10%, checked every 5 minutes: nobody sets it by hand, and a quick pump can't be cashed in. Your transfer is credited at the price when it's final, about 15–20 minutes after you send it."
+                            : t.symbol === "USDG"
+                              ? ". One USDG is one dollar of credit."
+                              : ". We set this price by hand and update it; your transfer is credited at the price shown here when it's final."}
+                        </>
+                      )}
                     </dd>
                   </div>
                 ))}
+                {!cfg.tokens.some((t) => t.symbol === "TAO") && (
+                  <div className="grid gap-x-8 gap-y-1 border-t border-line py-5 sm:grid-cols-[13rem_minmax(0,1fr)]">
+                    <dt className="text-xl text-mist">TAO</dt>
+                    <dd className="text-hush">Coming soon, through Chainlink CCIP. Don&apos;t send TAO yet.</dd>
+                  </div>
+                )}
                 <div className="grid gap-x-8 gap-y-1 border-t border-line py-5 sm:grid-cols-[13rem_minmax(0,1fr)]">
                   <dt className="text-xl text-mist">ETH</dt>
                   <dd className="text-hush">

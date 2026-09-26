@@ -4,6 +4,7 @@ import { SubnetStrip } from "@/components/landing/SubnetStrip";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { ChatShowcase } from "@/components/landing/ChatShowcase";
 import { BittensorSection } from "@/components/landing/BittensorSection";
+import { TwoChains } from "@/components/landing/TwoChains";
 import { LendTeaser } from "@/components/landing/LendTeaser";
 import { ChainSection } from "@/components/landing/ChainSection";
 import { Pricing } from "@/components/landing/Pricing";
@@ -22,6 +23,7 @@ export default function Home() {
       <Hero />
       <SubnetStrip />
       <BittensorSection />
+      <TwoChains />
       <HowItWorks />
       <ChatShowcase />
       <LendTeaser />

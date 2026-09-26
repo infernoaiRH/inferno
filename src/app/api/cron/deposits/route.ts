@@ -3,8 +3,8 @@ import { createHash, timingSafeEqual } from "node:crypto";
 const sha256 = (s: string) => createHash("sha256").update(s).digest();
 
 /**
- * Vercel Cron (vercel.json): settles Bittensor holds whose answer died and credits final deposits
- * (one bounded indexer run). Vercel sends `Authorization: Bearer $CRON_SECRET` when CRON_SECRET is
+ * Vercel Cron (vercel.json), every 5 minutes: samples $INFERNOAI's price, settles Bittensor holds whose
+ * answer died and credits final deposits (one bounded indexer run). Vercel sends `Authorization: Bearer $CRON_SECRET` when CRON_SECRET is
  * set; anything else is refused. Any scheduler can call it the same way, such as cron on a Docker host.
  */
 export async function GET(req: Request) {
@@ -15,6 +15,7 @@ export async function GET(req: Request) {
   // Loaded only once the caller checks out (which also lets scripts/credits-check.ts call this under plain Node).
   const { paymentsEnabled, paymentsOff } = await import("@/lib/credits");
   if (!(await paymentsEnabled())) return paymentsOff();
-  const { upkeep } = await import("@/lib/credits/indexer");
-  return Response.json(await upkeep(), { headers: { "Cache-Control": "no-store" } });
+  const { sampleCoin, upkeep } = await import("@/lib/credits/indexer");
+  const coinMicroUsd = await sampleCoin(); // first, so deposits credited below count this sample
+  return Response.json({ ...(await upkeep()), coinMicroUsd }, { headers: { "Cache-Control": "no-store" } });
 }

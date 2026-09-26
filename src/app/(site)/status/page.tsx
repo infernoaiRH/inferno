@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { getStatus } from "@/lib/status";
 import { site } from "@/lib/site";
 import { explorerBlock } from "@/lib/chain";
-import { formatInt } from "@/lib/format";
+import { formatInt, formatUsd } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Status",
   description:
-    "Is Inferno live? Checks of the site, Robinhood Chain mainnet, Bittensor subnet 64, credits and the $INFERNOAI contract, run on the server when the page loads.",
+    "Is Inferno live? Checks of the site, Robinhood Chain mainnet, Bittensor subnet 64, credits, the $INFERNOAI price and contract, run on the server when the page loads.",
   alternates: { canonical: "/status" },
 };
 
@@ -43,6 +43,8 @@ export default async function StatusPage() {
   const block = s.chain.latestBlock;
   const models = s.bittensor.sealedModels;
   const lenders = s.network?.lendersOnline ?? null;
+  const coin = s.token.creditUsd;
+  const paidIn = (s.payments.tokens ?? []).map((t) => (t === s.token.symbol ? `$${t}` : t)).join(" or ");
   const rows: { label: string; value: ReactNode; live: boolean; href?: string; go?: string }[] = [
     { label: "Website", value: "Up", live: true },
     {
@@ -61,7 +63,7 @@ export default async function StatusPage() {
     },
     {
       label: "Inferno credits",
-      value: s.payments.enabled === null ? "Couldn't check" : s.payments.enabled ? "On, paid in USDG" : "Off",
+      value: s.payments.enabled === null ? "Couldn't check" : s.payments.enabled ? `On, paid in ${paidIn || "USDG"}` : "Off",
       live: s.payments.enabled === true,
       href: "/credits",
       go: "Credits",
@@ -72,6 +74,21 @@ export default async function StatusPage() {
       live: (lenders ?? 0) > 0,
       href: "/network",
       go: "Network",
+    },
+    {
+      label: `$${s.token.symbol} for credits`,
+      value:
+        coin === null ? (
+          s.payments.tokens?.includes(s.token.symbol) ? "Price not ready yet; coins sent now wait for it" : "Not taken right now"
+        ) : (
+          <span>
+            <span className="tnum text-mist">{formatUsd(coin, Math.max(2, 2 - Math.floor(Math.log10(coin))))}</span> of credit a coin: the lowest price
+            of the last 30 minutes on its pool, less 10%
+          </span>
+        ),
+      live: coin !== null,
+      href: "/credits",
+      go: "Credits",
     },
     {
       label: `$${s.token.symbol} contract`,

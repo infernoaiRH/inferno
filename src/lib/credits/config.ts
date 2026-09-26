@@ -1,7 +1,8 @@
 import { erc20Abi, getAddress, isAddress, zeroAddress, type Address } from "viem";
 import { CHAIN, IS_MAINNET, USDG, serverClient } from "@/lib/chain";
 import { formatUsd } from "@/lib/format";
-import { initLedger, openDb, type Db, type Token } from "./ledger";
+import { COIN_TOKEN } from "./coin";
+import { coinDepositPrice, initLedger, openDb, type Db, type Token } from "./ledger";
 
 /** Server env for credits, read once. Nothing here is NEXT_PUBLIC_, and errors name variables, never values. */
 export type CreditsConfig = {
@@ -66,15 +67,17 @@ function read(env: NodeJS.ProcessEnv): { config: CreditsConfig | null; problems:
   const admins = (env.ADMIN_ADDRESSES ?? "").split(",").filter((a) => a.trim());
   need(admins.every((a) => toAddress(a)), "ADMIN_ADDRESSES must be comma-separated wallet addresses.");
 
-  // ponytail: manual USD prices for TAO and the coin, read at startup; upgrade to a TWAP from a DEX pool.
-  // Opt-in only: at a price above market, a wallet buys the token cheap, deposits it, spends the
-  // credits on "network answers" from a lender wallet it also runs, and is paid out in USDG.
+  // ponytail: manual USD prices for TAO and another coin (such as one on testnet), read at startup;
+  // $INFERNOAI is priced live from its pool instead (./coin.ts). Opt-in only: at a price above market,
+  // a wallet buys the token cheap, deposits it, spends the credits on "network answers" from a lender
+  // wallet it also runs, and is paid out in USDG.
   const manual = env.ALLOW_MANUAL_PRICES === "1";
   const notes =
     !manual && (env.TAO_USD_PRICE || env.COIN_ADDRESS || env.COIN_USD_PRICE)
-      ? ["Accepting USDG only: TAO_USD_PRICE, COIN_ADDRESS and COIN_USD_PRICE are ignored without ALLOW_MANUAL_PRICES=1 (a manual price above market can be cashed out through lender payouts; see .env.example)."]
+      ? ["Manual prices are off: TAO_USD_PRICE, COIN_ADDRESS and COIN_USD_PRICE are ignored without ALLOW_MANUAL_PRICES=1 (a manual price above market can be cashed out through lender payouts; see .env.example)."]
       : [];
   const tokens: Token[] = USDG ? [{ ...USDG, priceMicro: 1_000_000 }] : [];
+  if (COIN_TOKEN) tokens.push({ ...COIN_TOKEN, priceMicro: 0 }); // priced live by acceptedTokens()
   if (manual && env.TAO_USD_PRICE) {
     const priceMicro = usdToMicro(env.TAO_USD_PRICE);
     if (need(priceMicro !== null && IS_MAINNET, "TAO_USD_PRICE must be a positive dollar amount, and TAO is on mainnet only."))
@@ -134,21 +137,29 @@ export function ledgerDb(): Promise<Db | null> {
 
 let coinMeta: Promise<{ symbol: string; decimals: number }> | undefined;
 
-/** The tokens credits accept, with prices. The Inferno coin's symbol and decimals come from the chain, read once. */
+/** $INFERNOAI's deposit price from the cron's samples, or 0 (its deposits wait) while there's no safe one. */
+const livePrice = () => ledgerDb().then((db) => (db ? coinDepositPrice(db) : 0), () => 0);
+
+/**
+ * The tokens credits accept, with prices: $INFERNOAI at its live price (0 while it has none), and a
+ * manual coin with its symbol and decimals read from the chain, once.
+ */
 export async function acceptedTokens(): Promise<Token[]> {
   const c = creditsConfig().config;
-  if (!c?.coin) return c?.tokens ?? [];
+  if (!c) return [];
+  const tokens = await Promise.all(c.tokens.map(async (t) => (t.address === COIN_TOKEN?.address ? { ...t, priceMicro: await livePrice() } : t)));
+  if (!c.coin) return tokens;
   const coin = c.coin;
   coinMeta ??= Promise.all([
     serverClient.readContract({ address: coin.address, abi: erc20Abi, functionName: "symbol" }),
     serverClient.readContract({ address: coin.address, abi: erc20Abi, functionName: "decimals" }),
   ]).then(([symbol, decimals]) => ({ symbol: symbol.slice(0, 16), decimals }));
   try {
-    return [...c.tokens, { ...coin, ...(await coinMeta) }];
+    return [...tokens, { ...coin, ...(await coinMeta) }];
   } catch (e) {
     coinMeta = undefined; // try again next time
     console.error("[credits] Couldn't read the coin's symbol and decimals:", (e as { shortMessage?: string }).shortMessage ?? String(e));
-    return c.tokens;
+    return tokens;
   }
 }
 
@@ -161,7 +172,14 @@ export async function publicConfig() {
     enabled: c !== null,
     treasury: c?.treasury ?? null,
     chainId: CHAIN.id,
-    tokens: (c ? await acceptedTokens() : []).map((t) => ({ symbol: t.symbol, address: t.address, decimals: t.decimals, usdPrice: t.priceMicro / 1e6 })),
+    // usdPrice is what one whole token credits now; null while $INFERNOAI has no safe live price (its deposits wait).
+    tokens: (c ? await acceptedTokens() : []).map((t) => ({
+      symbol: t.symbol,
+      address: t.address,
+      decimals: t.decimals,
+      usdPrice: t.priceMicro ? t.priceMicro / 1e6 : null,
+      live: t.address === COIN_TOKEN?.address,
+    })),
     maxCreditUsd: c ? c.capMicro / 1e6 : null,
     minTopUpNote: c
       ? `No minimum. Each transfer credits at most ${dollars(c.capMicro)}, and each wallet at most ${dollars(c.dayCapMicro)} a day; anything above that waits for a manual review.`

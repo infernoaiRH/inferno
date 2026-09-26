@@ -97,7 +97,7 @@ const TIES = [
         <Link href="/credits" className={link}>
           credits
         </Link>{" "}
-        once the site&apos;s operator turns TAO payments on.
+        soon.
       </>
     ),
   },

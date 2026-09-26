@@ -34,8 +34,8 @@ export function ChainSection() {
             from it live.
           </p>
           <p className="mt-4 max-w-[46ch] text-lg text-hush">
-            Inferno uses it for money only. You buy credits by sending USDG, and lenders are paid in USDG for the tokens
-            their GPUs write. Your prompts and replies never go on-chain; only the payments do.
+            Inferno uses it for money only. You buy credits by sending USDG or $INFERNOAI, and lenders are paid in USDG
+            for the tokens their GPUs write. Your prompts and replies never go on-chain; only the payments do.
           </p>
         </div>
 

@@ -58,7 +58,8 @@ export async function openDb(env: Env): Promise<Db> {
 // from an admin wallet: the treasury is shared with another product, so that's funding, not a top-up.
 // refunds give back the unused part of a charge (a Bittensor answer's hold), at most once per charge.
 // holds are Bittensor answers being written, one per wallet; `used` is saved as one runs, for the sweep.
-// meta holds indexed_at: when the deposit indexer last ran.
+// meta holds indexed_at: when the deposit indexer last ran. coin_prices are the Inferno coin's price
+// samples (micro-USD per whole coin), taken every 5 minutes by the cron and kept for a day.
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS accounts (
   address TEXT PRIMARY KEY,
@@ -133,6 +134,10 @@ CREATE TABLE IF NOT EXISTS nonces (
 CREATE TABLE IF NOT EXISTS meta (
   key TEXT PRIMARY KEY,
   value BIGINT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS coin_prices (
+  at BIGINT PRIMARY KEY,
+  micro_usd BIGINT NOT NULL CHECK (micro_usd > 0)
 )`;
 
 /**
@@ -142,12 +147,15 @@ CREATE TABLE IF NOT EXISTS meta (
  * INFERNO_DB_INIT=1.
  */
 export async function initLedger(db: Db, env: Env): Promise<string | null> {
-  const [{ ready }] = await db.query<{ ready: boolean }>("SELECT to_regclass('accounts') IS NOT NULL AS ready");
-  if (ready) return null;
-  if (env.NODE_ENV === "production" && env.INFERNO_DB_INIT !== "1") {
+  const [{ ready, current }] = await db.query<{ ready: boolean; current: boolean }>(
+    "SELECT to_regclass('accounts') IS NOT NULL AS ready, to_regclass('coin_prices') IS NOT NULL AS current",
+  );
+  if (ready && current) return null;
+  if (!ready && env.NODE_ENV === "production" && env.INFERNO_DB_INIT !== "1") {
     const where = env.DATABASE_URL || env.POSTGRES_URL ? "the DATABASE_URL database" : env.INFERNO_DB_PATH || PGLITE_DIR;
     return `No ledger in ${where}. Check it's the right database (on Docker, that the /data volume is mounted), or set INFERNO_DB_INIT=1 once to create it.`;
   }
+  // A new ledger, or an older one getting the tables added since: every statement is IF NOT EXISTS.
   await db.tx(async (t) => {
     await t.query("SELECT pg_advisory_xact_lock(4663, 0)"); // instances starting together create it once
     for (const statement of SCHEMA.split(";")) await t.query(statement);
@@ -195,6 +203,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * transfers were new.
  */
 export function creditTransfers(db: Db, token: Token, transfers: Transfer[], caps: Caps, toBlock: number, now = Date.now()): Promise<number> {
+  // A deposit is recorded once, so crediting one at no price would lose it for good.
+  if (transfers.length && !(token.priceMicro >= 1)) return Promise.reject(new RangeError(`${token.symbol} has no price to credit at`));
   return db.tx(async (t) => {
     let fresh = 0;
     for (const x of transfers) {
@@ -253,17 +263,26 @@ export type IndexOptions = Caps & { treasury: Address; tokens: Token[]; startBlo
  * One indexing pass. For each token, reads Transfer(from, to = treasury) logs from its cursor up to
  * the finalized block, in chunks of at most 2,000 blocks (halved, down to 50, while the RPC refuses
  * a range), and credits each sender at the token's price. Mints (from the zero address) credit
- * nobody. A token with no cursor starts at `startBlock`, or at the current finalized block. Each
+ * nobody. On a new ledger a token starts at `startBlock`, or at the current finalized block; one added
+ * to a ledger that already has cursors starts at the finalized block, since nothing sent before it
+ * was accepted was a top-up. Each
  * chunk commits with its cursor, so a pass that fails, or stops at `deadline` (ms), resumes where it
- * stopped. Returns new deposits.
+ * stopped. A token without a price right now (priceMicro 0: the coin, while its price isn't safe) is
+ * skipped and keeps its cursor, so its deposits wait and are credited once it has one. Returns new deposits.
  */
 export async function indexTransfers(db: Db, client: PublicClient, o: IndexOptions, deadline = Infinity): Promise<number> {
   const finalized = (await client.getBlock({ blockTag: "finalized" })).number;
+  const [{ newLedger }] = await db.query<{ newLedger: boolean }>(`SELECT NOT EXISTS (SELECT 1 FROM indexer_state) AS "newLedger"`);
   let fresh = 0;
   for (const token of o.tokens) {
     const last = await lastBlock(db, token.address);
+    let from = last !== null ? BigInt(last) + 1n : newLedger ? (o.startBlock ?? finalized) : finalized;
+    if (!token.priceMicro) {
+      if (last === null) await creditTransfers(db, token, [], o, Number(from - 1n)); // start waiting from here
+      continue;
+    }
     let size = CHUNK;
-    for (let from = last === null ? (o.startBlock ?? finalized) : BigInt(last) + 1n; from <= finalized && Date.now() < deadline; ) {
+    while (from <= finalized && Date.now() < deadline) {
       const to = from + size - 1n < finalized ? from + size - 1n : finalized;
       const logs = await client
         .getLogs({ address: token.address, event: TRANSFER, args: { to: o.treasury }, fromBlock: from, toBlock: to, strict: true })
@@ -302,6 +321,41 @@ export async function catchUp(db: Db, client: PublicClient, o: IndexOptions, now
     [now, now - EVERY_MS],
   );
   return claimed.length ? indexTransfers(db, client, o, now + BUDGET_MS) : null;
+}
+
+// ---- The Inferno coin's price ----------------------------------------------------------------
+
+/**
+ * Micro-USD per whole coin, rounded down, from its Uniswap v4 pool's sqrtPriceX96 and an ETH/USD
+ * answer with `decimals`. ETH is the pool's currency0 and the coin its currency1, both 18 decimals, so
+ * (sqrtPriceX96 / 2^96)^2 is coins per ETH and a coin is ethUsd * 2^192 / sqrtPriceX96^2.
+ * ponytail: whole micro-USD per coin, so at $0.00025 a price rounds down by up to 0.4%; move to a
+ * finer unit if the coin trades far lower.
+ */
+export const coinPriceMicro = (sqrtPriceX96: bigint, ethUsd: bigint, decimals: number): number =>
+  Number(((ethUsd * 1_000_000n) << 192n) / (10n ** BigInt(decimals) * sqrtPriceX96 * sqrtPriceX96));
+
+/** Records a price sample taken at `now`, and drops samples more than a day old. */
+export async function recordCoinPrice(db: Db, microUsd: number, now = Date.now()): Promise<void> {
+  assertMicro(microUsd, "A coin price");
+  await db.query("INSERT INTO coin_prices (at, micro_usd) VALUES ($1, $2) ON CONFLICT DO NOTHING", [now, microUsd]);
+  await db.query("DELETE FROM coin_prices WHERE at < $1", [now - DAY_MS]);
+}
+
+const MINUTE_MS = 60_000;
+
+/**
+ * What a coin deposit credits per whole coin right now, in micro-USD: the lowest sample of the last
+ * 30 minutes, less 10%, so a pump shorter than that can't be cashed in. 0, and deposits wait, unless
+ * the samples cover the window: the oldest at least 20 minutes old and the newest at most 10.
+ */
+export async function coinDepositPrice(db: Db, now = Date.now()): Promise<number> {
+  const [w] = await db.query<{ low: number | null; first: number | null; last: number | null }>(
+    "SELECT MIN(micro_usd) AS low, MIN(at) AS first, MAX(at) AS last FROM coin_prices WHERE at > $1 AND at <= $2",
+    [now - 30 * MINUTE_MS, now],
+  );
+  if (w.low === null || w.first! > now - 20 * MINUTE_MS || w.last! < now - 10 * MINUTE_MS) return 0;
+  return Math.floor((w.low * 9) / 10);
 }
 
 // ---- Charges, holds and network usage ---------------------------------------------------------

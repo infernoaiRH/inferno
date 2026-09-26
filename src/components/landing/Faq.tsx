@@ -7,8 +7,12 @@ const faqs = [
     a: "Bittensor is a decentralized network where miners compete to serve AI, and the network pays them in TAO. Inferno's Bittensor mode asks subnet 64, run by Chutes, where miners serve big open models inside confidential-compute hardware, so they can't read your prompts. Chutes' gateway handles your words in memory and, by its privacy policy, doesn't store them.",
   },
   {
+    q: "Can I pay with the Inferno coin?",
+    a: "Yes. Send $INFERNOAI from your wallet to Inferno's treasury on Robinhood Chain, and it's credited at its live price: the lowest of the last 30 minutes on its Uniswap pool, less 10%, checked every 5 minutes. The credits page shows today's price.",
+  },
+  {
     q: "Can I pay with TAO?",
-    a: "Once the operator switches it on. TAO is on Robinhood Chain through Chainlink's bridge, and Inferno can accept it for credits; the credits page lists what this server takes today. If you use your own Chutes key, Chutes takes TAO directly.",
+    a: "Not yet, soon. TAO reaches Robinhood Chain through Chainlink's CCIP bridge, and that's how you'll pay with it. For now, if you use your own Chutes key, Chutes takes TAO directly.",
   },
   {
     q: "Is Inferno part of Robinhood?",
