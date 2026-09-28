@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  // The API's base URL opened in a browser (SDKs only call the endpoints under it): its docs and keys.
+  async redirects() {
+    return ["/api", "/api/v1"].map((source) => ({ source, destination: "/credits#api", permanent: false }));
+  },
 };
 
 export default nextConfig;
