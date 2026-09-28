@@ -23,5 +23,6 @@ export const site = {
     { href: "/network", label: "Network" },
     { href: "/messages", label: "Messages" },
     { href: "/credits", label: "Credits" },
+    { href: "/credits#api", label: "Docs" },
   ],
 } as const;

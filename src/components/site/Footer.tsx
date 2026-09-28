@@ -14,7 +14,7 @@ const columns: { title: string; links: { href: string; label: string; external?:
       { href: "/lend", label: "Mine with your GPU" },
       { href: "/network", label: "Live network" },
       { href: "/messages", label: "Sealed messages" },
-      { href: "/credits#api", label: "API" },
+      { href: "/credits#api", label: "API docs" },
       { href: "/#pricing", label: "Pricing" },
     ],
   },

@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Command, Menu, X } from "lucide-react";
-import { togglePalette } from "@/components/palette/CommandPalette";
+import { Menu, X } from "lucide-react";
 import { site } from "@/lib/site";
 import { cn } from "@/lib/cn";
 import { Logo } from "@/components/brand/Logo";
@@ -50,7 +49,7 @@ export function Nav({ variant = "site" }: { variant?: "site" | "app" }) {
         solid ? "border-line/70 bg-night/80 backdrop-blur-xl" : "border-transparent bg-transparent",
       )}
     >
-      <nav className="mx-auto flex h-16 max-w-7xl items-center gap-8 px-5 sm:px-8" aria-label="Main">
+      <nav className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-5 sm:px-8" aria-label="Main">
         <Link href="/" aria-label={`${site.name} home`} className="shrink-0">
           <Logo />
         </Link>
@@ -63,7 +62,7 @@ export function Nav({ variant = "site" }: { variant?: "site" | "app" }) {
                   href={l.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "rounded-full px-3 py-1.5 text-[15px] whitespace-nowrap transition-colors",
+                    "rounded-full px-2.5 py-1.5 text-[15px] whitespace-nowrap transition-colors",
                     active ? "text-mist" : "text-hush hover:text-mist",
                   )}
                 >
@@ -96,15 +95,6 @@ export function Nav({ variant = "site" }: { variant?: "site" | "app" }) {
           >
             <XLogo className="text-[17px]" />
           </a>
-          {/* From xl only, so the X link fits the 1024 px row; ⌘K works everywhere. */}
-          <button
-            onClick={togglePalette}
-            className="hidden h-10 w-10 items-center justify-center rounded-full text-hush transition-colors hover:text-mist xl:flex"
-            aria-label="Open the command menu"
-            title="Jump anywhere (⌘K or Ctrl+K)"
-          >
-            <Command size={17} />
-          </button>
           <ConnectButton className="hidden sm:inline-flex" />
           <button
             className="flex h-10 w-10 items-center justify-center rounded-full text-hush hover:text-mist lg:hidden"
