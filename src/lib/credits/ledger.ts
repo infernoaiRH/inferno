@@ -135,7 +135,10 @@ CREATE TABLE IF NOT EXISTS nonces (
 CREATE TABLE IF NOT EXISTS meta (
   key TEXT PRIMARY KEY,
   value BIGINT NOT NULL
-);
+)`;
+
+/** Tables added since the first release: new ledgers get them with SCHEMA, older ones as they open (initLedger). */
+const ADDED = `
 CREATE TABLE IF NOT EXISTS coin_prices (
   at BIGINT PRIMARY KEY,
   micro_usd BIGINT NOT NULL CHECK (micro_usd > 0)
@@ -151,6 +154,9 @@ CREATE TABLE IF NOT EXISTS api_keys (
 );
 CREATE INDEX IF NOT EXISTS api_keys_by_address ON api_keys (address)`;
 
+/** Kills this transaction's session if it sits idle, such as a serverless instance frozen mid-way, so its locks can't hold others up. */
+const NO_STUCK_LOCKS = "SET LOCAL idle_in_transaction_session_timeout = '10s'";
+
 /**
  * Creates the ledger's tables in an empty database, and returns null; or returns why payments must
  * stay off. In production an empty database means the wrong DATABASE_URL, an unmounted volume or a
@@ -162,14 +168,27 @@ export async function initLedger(db: Db, env: Env): Promise<string | null> {
     "SELECT to_regclass('accounts') IS NOT NULL AS ready, to_regclass('coin_prices') IS NOT NULL AND to_regclass('api_keys') IS NOT NULL AS current",
   );
   if (ready && current) return null;
-  if (!ready && env.NODE_ENV === "production" && env.INFERNO_DB_INIT !== "1") {
+  if (ready) {
+    // An older ledger: add the new tables only. They touch no table in use, and a short lock timeout
+    // (another instance adding them at the same moment) leaves them for the next start. Opening never
+    // waits on this: it runs as instances start, outside any request.
+    await db
+      .tx(async (t) => {
+        await t.query(NO_STUCK_LOCKS);
+        await t.query("SET LOCAL lock_timeout = '3s'");
+        for (const statement of ADDED.split(";")) await t.query(statement);
+      })
+      .catch((e: unknown) => console.error("[credits] Couldn't add the new ledger tables yet; the next start tries again:", e instanceof Error ? e.message : e));
+    return null;
+  }
+  if (env.NODE_ENV === "production" && env.INFERNO_DB_INIT !== "1") {
     const where = env.DATABASE_URL || env.POSTGRES_URL ? "the DATABASE_URL database" : env.INFERNO_DB_PATH || PGLITE_DIR;
     return `No ledger in ${where}. Check it's the right database (on Docker, that the /data volume is mounted), or set INFERNO_DB_INIT=1 once to create it.`;
   }
-  // A new ledger, or an older one getting the tables added since: every statement is IF NOT EXISTS.
   await db.tx(async (t) => {
+    await t.query(NO_STUCK_LOCKS);
     await t.query("SELECT pg_advisory_xact_lock(4663, 0)"); // instances starting together create it once
-    for (const statement of SCHEMA.split(";")) await t.query(statement);
+    for (const statement of `${SCHEMA};${ADDED}`.split(";")) await t.query(statement);
   });
   return null;
 }
