@@ -298,11 +298,30 @@ assert.equal(await L.indexTransfers(idb, coinRpc(9_500n), { ...io, tokens: [USDG
 assert.equal(await L.lastBlock(idb, COIN.address), 9_500, "the coin's transfer at block 1,500, before it was accepted, isn't a top-up");
 const waiting = { txHash: tx(201), logIndex: 0, block: 1, from: dave, amount: 1n };
 await assert.rejects(L.creditTransfers(cdb, COIN, [waiting], caps, 1), /no price/, "a deposit is never recorded at no price");
-// A ledger made before the price table gets it when it opens, without INFERNO_DB_INIT.
+// A ledger made before the price and key tables gets them when it opens, without INFERNO_DB_INIT.
 const older = await ledger();
 await older.query("DROP TABLE coin_prices");
+await older.query("DROP TABLE api_keys");
 assert.equal(await L.initLedger(older, { NODE_ENV: "production" }), null);
 assert.equal(await L.coinDepositPrice(older), 0, "the price table is back");
+assert.deepEqual(await L.listKeys(older, alice), [], "and the key table");
+
+// API keys: at most 5 live per wallet, found by hash (noting use), revoked only by their own wallet.
+const kdb = await ledger();
+const k1 = await L.addKey(kdb, alice, "h1", "aaaa", 1_000);
+assert.deepEqual(k1, { id: k1!.id, hint: "aaaa", createdAt: 1_000, lastUsedAt: null });
+for (let i = 2; i <= 5; i++) assert.ok(await L.addKey(kdb, alice, `h${i}`, "bbbb", 1_000 + i));
+assert.equal(await L.addKey(kdb, alice, "h6", "cccc"), null, "a sixth key is refused");
+assert.equal((await L.listKeys(kdb, alice.toUpperCase().replace("0X", "0x")))[0].createdAt, 1_005, "newest first, any address case");
+assert.equal(await L.keyWallet(kdb, "h1", 2_000), alice.toLowerCase());
+assert.equal((await L.listKeys(kdb, alice)).find((k: { id: number }) => k.id === k1!.id)!.lastUsedAt, 2_000);
+assert.equal(await L.keyWallet(kdb, "nope"), null);
+assert.equal(await L.revokeKey(kdb, bob, k1!.id), false, "another wallet can't revoke it");
+assert.equal(await L.revokeKey(kdb, alice, k1!.id), true);
+assert.equal(await L.revokeKey(kdb, alice, k1!.id), false, "once");
+assert.equal(await L.keyWallet(kdb, "h1"), null, "a revoked key opens nothing");
+assert.ok(await L.addKey(kdb, alice, "h6", "cccc"), "and it frees a slot");
+await assert.rejects(L.addKey(kdb, bob, "h2", "dddd"), "a hash is unique");
 
 // Nonces: single use, 10 minutes.
 await L.issueNonce(db, "n1", NONCE_TTL_MS, 1_000);
@@ -367,7 +386,7 @@ assert.equal(await cronCall(`Bearer ${"t".repeat(32)}`), 401, "wrong secret");
 assert.equal(await cronCall(`Bearer ${"s".repeat(31)}`), 401, "a prefix of it");
 assert.equal(await cronCall("s".repeat(32)), 401, "not as a bearer token");
 
-console.log(`credits-check: ledger, holds, caps, indexer, coin price, cron, cookie and SIWE checks passed (${server ? "Postgres at DATABASE_URL" : "PGlite"})`);
+console.log(`credits-check: ledger, holds, caps, indexer, coin price, API keys, cron, cookie and SIWE checks passed (${server ? "Postgres at DATABASE_URL" : "PGlite"})`);
 
 // Fork test: a real USDG transfer on a mainnet fork, one indexer pass, the sender is credited.
 const fork = process.env.CREDITS_FORK_RPC;

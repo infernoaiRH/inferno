@@ -1,7 +1,7 @@
 /** Self-check for chutes.ts: model list, credit pricing, SSE parsing. Run: node src/lib/bittensor/check.ts */
 import assert from "node:assert/strict";
 // @ts-expect-error -- Node's type stripping needs the .ts extension; the shared tsconfig doesn't allow it
-import { BITTENSOR_MARGIN, costUsd, creditsMicroUsd, estimateTokens, parseChunk, sseReader, toModels } from "./chutes.ts";
+import { BITTENSOR_MARGIN, completion, costUsd, creditsMicroUsd, estimateTokens, parseChunk, sseReader, toModels, usageOnly } from "./chutes.ts";
 
 // Only confidential-compute models with sane numbers are listed.
 const models = toModels({
@@ -49,5 +49,23 @@ assert.deepEqual(parseChunk('{"choices":[],"usage":{"prompt_tokens":12,"completi
 });
 assert.equal(parseChunk('{"usage":{"prompt_tokens":"12","completion_tokens":3}}').usage, undefined);
 assert.deepEqual(parseChunk("not json"), { text: "", thought: "" });
+
+// The API drops only a chunk that carries token counts and nothing else, as OpenAI does unless asked.
+assert.equal(usageOnly(parseChunk('{"choices":[],"usage":{"prompt_tokens":12,"completion_tokens":34}}')), true);
+assert.equal(usageOnly(parseChunk('{"choices":[{"delta":{},"finish_reason":"stop"}],"usage":{"prompt_tokens":1,"completion_tokens":2}}')), false, "keeps a finish");
+assert.equal(usageOnly(parseChunk('{"choices":[{"delta":{"content":"Hi"}}]}')), false);
+
+// A whole answer, for API callers that didn't ask to stream: OpenAI's chat.completion shape.
+const whole = { id: "chatcmpl-x", model: "m", created: 1, text: "Hi", thought: "", finish: "stop", usage: { prompt_tokens: 3, completion_tokens: 1 } };
+assert.deepEqual(completion(whole), {
+  id: "chatcmpl-x",
+  object: "chat.completion",
+  created: 1,
+  model: "m",
+  choices: [{ index: 0, message: { role: "assistant", content: "Hi" }, finish_reason: "stop" }],
+  usage: { prompt_tokens: 3, completion_tokens: 1, total_tokens: 4 },
+});
+assert.equal(completion({ ...whole, thought: "hmm" }).choices[0].message.reasoning_content, "hmm");
+assert.equal("usage" in completion({ ...whole, usage: undefined }), false, "no counts, no usage");
 
 console.log("bittensor check: ok");

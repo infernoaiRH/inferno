@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { ExternalLink } from "lucide-react";
+import { ApiKeys } from "@/components/credits/ApiKeys";
 import { CopyButton, CreditsAccount } from "@/components/credits/CreditsAccount";
 import { buttonClass } from "@/components/ui/Button";
 import { CHAIN, explorerAddress } from "@/lib/chain";
@@ -21,8 +22,28 @@ export const metadata: Metadata = {
 const wrap = "mx-auto max-w-7xl px-5 sm:px-8";
 const split = "grid gap-x-16 gap-y-10 py-16 sm:py-24 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]";
 const link = "text-flame underline decoration-flame/40 underline-offset-4 hover:decoration-flame";
+const mono = "rounded-md bg-night-3 px-1.5 py-0.5 font-mono text-[0.88em] text-mist wrap-anywhere";
+const codeClass = "overflow-x-auto rounded-2xl border border-line-bright bg-night-2 p-4 font-mono text-[14px] leading-relaxed text-mist";
 /** ForeverMoney's bridge: TAO from Bittensor to Robinhood Chain over Chainlink CCIP. */
 const TAO_BRIDGE = "https://forevermoney.ai/bridge?type=bridge&from=finney&to=robinhood";
+/** One of the ids GET /api/v1/models lists, for the examples. */
+const API_MODEL = "moonshotai/Kimi-K2.6-TEE";
+
+const curlExample = (base: string) => `curl ${base}/chat/completions \\
+  -H "Authorization: Bearer $INFERNO_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"model": "${API_MODEL}", "messages": [{"role": "user", "content": "Say hello"}]}'`;
+
+const pythonExample = (base: string) => `import os
+from openai import OpenAI
+
+client = OpenAI(base_url="${base}", api_key=os.environ["INFERNO_API_KEY"])
+
+response = client.chat.completions.create(
+    model="${API_MODEL}",
+    messages=[{"role": "user", "content": "Say hello"}],
+)
+print(response.choices[0].message.content)`;
 
 function Rules({ rows }: { rows: { term: string; detail: string }[] }) {
   return (
@@ -76,6 +97,7 @@ export default async function CreditsPage() {
   const symbols = cfg.tokens.map(sym);
   const sendable = symbols.length > 1 ? `${symbols.slice(0, -1).join(", ")} or ${symbols.at(-1)}` : (symbols[0] ?? "tokens");
   const cap = cfg.maxCreditUsd === null ? "" : formatUsd(cfg.maxCreditUsd, cfg.maxCreditUsd % 1 ? 2 : 0);
+  const apiBase = `${site.url}/api/v1`;
 
   return (
     <>
@@ -203,6 +225,51 @@ export default async function CreditsPage() {
                 Your credits
               </h2>
               <CreditsAccount />
+            </div>
+          </section>
+
+          <section id="api" aria-labelledby="api-title" className="border-t border-line">
+            <div className={cn(wrap, split)}>
+              <div>
+                <h2 id="api-title" className="wide text-4xl sm:text-6xl">
+                  Inferno API
+                </h2>
+                <p className="mt-6 max-w-[40ch] text-hush">
+                  An OpenAI-compatible API that answers on sealed Bittensor models, paid from your credits.
+                </p>
+              </div>
+              <div className="min-w-0">
+                <ApiKeys />
+                <div className="mt-14 space-y-4">
+                  <p className="text-hush">
+                    Base URL <span className={mono}>{apiBase}</span>. Send requests to <span className={mono}>POST {apiBase}/chat/completions</span>{" "}
+                    (streaming or not) with <span className={mono}>Authorization: Bearer &lt;key&gt;</span>.
+                  </p>
+                  <div>
+                    <p className="mb-2 text-[13px] text-faint">curl</p>
+                    <pre className={codeClass}>{curlExample(apiBase)}</pre>
+                  </div>
+                  <div>
+                    <p className="mb-2 text-[13px] text-faint">Python</p>
+                    <pre className={codeClass}>{pythonExample(apiBase)}</pre>
+                  </div>
+                  <p className="text-[13px] text-faint">
+                    Pick any model id from <span className={mono}>GET {apiBase}/models</span>, which also lists each one&apos;s price per million tokens.
+                  </p>
+                </div>
+                <Rules
+                  rows={[
+                    { term: "Price", detail: "The same as Bittensor chat: Chutes' price plus Inferno's 20% margin, paid from your wallet's credits." },
+                    {
+                      term: "One at a time",
+                      detail: "Each wallet runs one answer at a time. Another request meanwhile gets HTTP 429, which OpenAI SDKs retry on their own.",
+                    },
+                    { term: "1,024 tokens", detail: "Answers are capped at 1,024 tokens." },
+                    { term: "Keep it secret", detail: "Call it from a server, not the browser: anyone with the key spends your wallet's credits." },
+                    { term: "Nothing stored", detail: "Prompts aren't stored or logged." },
+                  ]}
+                />
+              </div>
             </div>
           </section>
 

@@ -59,7 +59,8 @@ export async function openDb(env: Env): Promise<Db> {
 // refunds give back the unused part of a charge (a Bittensor answer's hold), at most once per charge.
 // holds are Bittensor answers being written, one per wallet; `used` is saved as one runs, for the sweep.
 // meta holds indexed_at: when the deposit indexer last ran. coin_prices are the Inferno coin's price
-// samples (micro-USD per whole coin), taken every 5 minutes by the cron and kept for a day.
+// samples (micro-USD per whole coin), taken every 5 minutes by the cron and kept for a day. api_keys
+// hold the SHA-256 of each API key (never the key) and its last 4 characters, to tell keys apart.
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS accounts (
   address TEXT PRIMARY KEY,
@@ -138,7 +139,17 @@ CREATE TABLE IF NOT EXISTS meta (
 CREATE TABLE IF NOT EXISTS coin_prices (
   at BIGINT PRIMARY KEY,
   micro_usd BIGINT NOT NULL CHECK (micro_usd > 0)
-)`;
+);
+CREATE TABLE IF NOT EXISTS api_keys (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  address TEXT NOT NULL,
+  hash TEXT NOT NULL UNIQUE,
+  hint TEXT NOT NULL,
+  created_at BIGINT NOT NULL,
+  last_used_at BIGINT,
+  revoked_at BIGINT
+);
+CREATE INDEX IF NOT EXISTS api_keys_by_address ON api_keys (address)`;
 
 /**
  * Creates the ledger's tables in an empty database, and returns null; or returns why payments must
@@ -148,7 +159,7 @@ CREATE TABLE IF NOT EXISTS coin_prices (
  */
 export async function initLedger(db: Db, env: Env): Promise<string | null> {
   const [{ ready, current }] = await db.query<{ ready: boolean; current: boolean }>(
-    "SELECT to_regclass('accounts') IS NOT NULL AS ready, to_regclass('coin_prices') IS NOT NULL AS current",
+    "SELECT to_regclass('accounts') IS NOT NULL AS ready, to_regclass('coin_prices') IS NOT NULL AND to_regclass('api_keys') IS NOT NULL AS current",
   );
   if (ready && current) return null;
   if (!ready && env.NODE_ENV === "production" && env.INFERNO_DB_INIT !== "1") {
@@ -362,6 +373,40 @@ export async function coinDepositPrice(db: Db, now = Date.now()): Promise<number
   );
   if (w.low === null || w.first! > now - 20 * MINUTE_MS || w.last! < now - 10 * MINUTE_MS) return 0;
   return afterHaircut(w.low);
+}
+
+// ---- API keys ---------------------------------------------------------------------------------
+
+export type KeyRow = { id: number; hint: string; createdAt: number; lastUsedAt: number | null };
+/** Live keys a wallet may have at once. */
+export const MAX_KEYS = 5;
+const KEY_COLUMNS = `id, hint, created_at AS "createdAt", last_used_at AS "lastUsedAt"`;
+
+/** Saves a new key's hash for `address`: null when the wallet already has MAX_KEYS live keys. */
+export function addKey(db: Db, address: string, hash: string, hint: string, now = Date.now()): Promise<KeyRow | null> {
+  const a = low(address);
+  return db.tx(async (t) => {
+    await lock(t, a);
+    const [{ n }] = await t.query<{ n: number }>("SELECT COUNT(*) AS n FROM api_keys WHERE address = $1 AND revoked_at IS NULL", [a]);
+    if (n >= MAX_KEYS) return null;
+    const [row] = await t.query<KeyRow>(`INSERT INTO api_keys (address, hash, hint, created_at) VALUES ($1, $2, $3, $4) RETURNING ${KEY_COLUMNS}`, [a, hash, hint, now]);
+    return row;
+  });
+}
+
+/** A wallet's live keys, newest first. */
+export const listKeys = (db: Db, address: string) =>
+  db.query<KeyRow>(`SELECT ${KEY_COLUMNS} FROM api_keys WHERE address = $1 AND revoked_at IS NULL ORDER BY id DESC`, [low(address)]);
+
+/** Revokes one of the wallet's keys: false when it has no such live key. */
+export async function revokeKey(db: Db, address: string, id: number, now = Date.now()): Promise<boolean> {
+  return (await db.query("UPDATE api_keys SET revoked_at = $3 WHERE id = $1 AND address = $2 AND revoked_at IS NULL RETURNING 1", [id, low(address), now])).length === 1;
+}
+
+/** The wallet a live key's hash belongs to, or null, noting when the key was used. */
+export async function keyWallet(db: Db, hash: string, now = Date.now()): Promise<string | null> {
+  const [row] = await db.query<{ address: string }>("UPDATE api_keys SET last_used_at = $2 WHERE hash = $1 AND revoked_at IS NULL RETURNING address", [hash, now]);
+  return row?.address ?? null;
 }
 
 // ---- Charges, holds and network usage ---------------------------------------------------------

@@ -36,6 +36,7 @@ Live status, checked ${s.checkedAt}: ${live || "checks unavailable right now"}. 
 - [Messages](${u("/messages")}): end-to-end sealed messages between wallets (X25519, HKDF, XChaCha20-Poly1305).
 - [Credits](${u("/credits")}): pay per answer with USDG, $${site.token.symbol} or TAO sent to the treasury on Robinhood Chain. $${site.token.symbol} counts at its live price: the lowest of the last 30 minutes on its Uniswap v4 pool, checked every 5 minutes, less 10%. TAO bridged to Robinhood Chain over Chainlink CCIP counts at Chainlink's TAO/USD price, less 10%.
 - [Network](${u("/network")}): live Robinhood Chain data and the lenders online.
+- [API](${u("/credits#api")}): OpenAI-compatible at ${u("/api/v1")} (POST /chat/completions, GET /models). Sealed Bittensor subnet 64 models, paid from Inferno credits with an API key made on the credits page.
 
 ## Notes
 

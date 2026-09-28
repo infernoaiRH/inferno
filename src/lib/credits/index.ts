@@ -8,6 +8,7 @@
  *
  * CONTRACT FOR OTHER MODULES: keep these exported names and signatures.
  */
+import { createHash, randomBytes } from "node:crypto";
 import { isAddress } from "viem";
 import { CHAIN } from "@/lib/chain";
 import { creditsConfig, ledgerDb } from "./config";
@@ -27,6 +28,22 @@ export async function paymentsEnabled(): Promise<boolean> {
 export async function sessionAddress(req: Request): Promise<Address | null> {
   const c = creditsConfig().config;
   return c ? verifySession(readCookie(req, SESSION_COOKIE), c.secret) : null;
+}
+
+const API_KEY = /^inf_[\w-]{43}$/;
+const keyHash = (key: string) => createHash("sha256").update(key).digest("hex");
+
+/** A new API key (inf_ and 32 random bytes): shown once, since only its hash and last 4 characters are kept. */
+export function newKey(): { key: string; hash: string; hint: string } {
+  const key = `inf_${randomBytes(32).toString("base64url")}`;
+  return { key, hash: keyHash(key), hint: key.slice(-4) };
+}
+
+/** The wallet behind this request's `Authorization: Bearer inf_…` API key, lowercase, or null. */
+export async function keyAddress(req: Request): Promise<Address | null> {
+  const key = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
+  const d = API_KEY.test(key) ? await ledgerDb() : null;
+  return d ? ((await ledger.keyWallet(d, keyHash(key))) as Address | null) : null;
 }
 
 /** Current balance in micro-USD. */

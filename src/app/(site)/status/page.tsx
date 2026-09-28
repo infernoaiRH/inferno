@@ -88,6 +88,13 @@ export default async function StatusPage() {
       go: "Credits",
     },
     {
+      label: "Inferno API (OpenAI-compatible)",
+      value: models && s.bittensor.creditsOn ? `Live at /api/v1, ${models} sealed models` : "Off right now",
+      live: !!models && s.bittensor.creditsOn,
+      href: "/api/v1/models",
+      go: "Models",
+    },
+    {
       label: "GPUs people lend",
       value: lenders === null ? "Relay off" : `${lenders} online right now`,
       live: (lenders ?? 0) > 0,

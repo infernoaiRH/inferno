@@ -3,7 +3,10 @@ import { answer } from "@/lib/bittensor/answer";
 /** Vercel ends this function after 5 minutes. An answer is cut off, and settled, before that (lib/bittensor/answer.ts). */
 export const maxDuration = 300;
 
-/** One Bittensor answer for the signed-in wallet, paid with Inferno credits; Chutes' stream passes through. */
+/**
+ * The Inferno API: OpenAI's chat completions, answered by sealed models on Bittensor subnet 64 and
+ * paid from the credits of the wallet behind `Authorization: Bearer inf_…` (keys are made on /credits).
+ */
 export function POST(req: Request) {
-  return answer(req, false);
+  return answer(req, true);
 }

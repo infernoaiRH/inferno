@@ -100,3 +100,21 @@ export function parseChunk(data: string): { text: string; thought: string; finis
     return { text: "", thought: "" };
   }
 }
+
+/** A chunk with only token counts: OpenAI sends it only to callers who ask (`stream_options.include_usage`). */
+export const usageOnly = (c: ReturnType<typeof parseChunk>) => !!c.usage && !c.text && !c.thought && !c.finish;
+
+/**
+ * OpenAI's chat.completion for an answer read from Chutes' stream, for API callers that didn't ask
+ * to stream. Thinking text, if the model wrote any, goes in `reasoning_content`, as Chutes sends it.
+ */
+export function completion(a: { id: string; model: string; created: number; text: string; thought: string; finish: string; usage?: Usage }) {
+  return {
+    id: a.id,
+    object: "chat.completion",
+    created: a.created,
+    model: a.model,
+    choices: [{ index: 0, message: { role: "assistant", content: a.text, ...(a.thought && { reasoning_content: a.thought }) }, finish_reason: a.finish }],
+    ...(a.usage && { usage: { ...a.usage, total_tokens: a.usage.prompt_tokens + a.usage.completion_tokens } }),
+  };
+}
